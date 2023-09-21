@@ -15,13 +15,11 @@ public class Article {
     private Date created_at;
     private Date updated_at;
     private String user_id;
-    private Integer favoriteCount;
+    private int favoriteCount;
     private List<Tag> tagList;
 
     public class Tag {
         private String name;
-
-        // Getter and setter methods for 'name'
         public String getName() {
             return name;
         }
@@ -39,11 +37,10 @@ public class Article {
         } else {
             builder.append("No tags\n");
         }
-
         return builder.toString();
     }
 
-    public Article(String title, String content, Date created_at, Date updated_at, String user_id, List<Tag> tagList, Integer favoriteCount) {
+    public Article(String title, String content, Date created_at, Date updated_at, String user_id, List<Tag> tagList, int favoriteCount) {
         super();
         this.title = title;
         this.content = content;
@@ -102,11 +99,11 @@ public class Article {
         this.user_id = user_id;
     }
 
-    public Integer getFavoriteCount() {
+    public int getFavoriteCount() {
         return favoriteCount;
     }
 
-    public void setFavoriteCount(Integer favoriteCount) {
+    public void setFavoriteCount(int favoriteCount) {
         this.favoriteCount = favoriteCount;
     }
 

@@ -1,12 +1,16 @@
 package com.example.springbootarticles;
 
 import com.example.springbootarticles.models.Article;
+import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.ArticleRepository;
+import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+
+import java.util.Optional;
 
 
 @SpringBootApplication
@@ -15,11 +19,13 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 
 	@Autowired
 	ArticleRepository articleRepo;
+	@Autowired
+	UserRepository userRepo;
 
 	public static void main(String[] args) { SpringApplication.run(SpringBootArticlesApplication.class, args); }
 
 	public void showAllArticlesByCategory(String tag) {
-		articleRepo.findAll(tag).forEach(article -> System.out.println(getArticleDetails(article)));
+		articleRepo.findAll(tag).forEach(this::getArticleDetails);
 	}
 	public void showArticleById(String articleId) {
 		Article article = articleRepo.findArticleById(articleId);
@@ -29,29 +35,41 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 						"\nTitle: " + article.getTitle() +
 						"\nContent: " + article.getContent() +
 						"\nLikes: " + article.getFavoriteCount() +
-						"\nTags: " + article.getTags()
+						"\nTags: " + article.getTags() +
+						"-----------------------"
 			);
 		} else {
 			System.out.println("Article not found with ID: " + articleId);
 		}
 	}
-	public String getArticleDetails(Article article) {
+	public void getArticleDetails(Article article) {
 		System.out.println(
 				"---------------------" +
 					"\nArticle title: " + article.getTitle() +
 					",\nArticle Body: " + article.getContent() +
 					",\nLikes: " + article.getFavoriteCount() +
-					",\nTags: " + article.getTags() +
-					"-----------------------"
+					",\nTags: " + article.getTags()
 		);
-
-		return "";
 	}
-
+	public void showUserById(String userId){
+		User user = userRepo.findUserById(userId);
+		if (user != null){
+			System.out.println(
+					"\n--------- User ---------" +
+						"\nName: " + user.getName() +
+						"\nEmail: " + user.getEmail() +
+						"\nSubscription: " + user.getSubscription() +
+						"\n-----------------------"
+			);
+		} else {
+			System.out.println("User not found with ID: " + userId);
+		}
+	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		showAllArticlesByCategory("Glassfish");
+//		showAllArticlesByCategory("Glassfish");
 //		showArticleById("64feeb3b62070be77772b96c");
+		showUserById("64fef86a34cd3b4f73c5a13b");
 	}
 }
