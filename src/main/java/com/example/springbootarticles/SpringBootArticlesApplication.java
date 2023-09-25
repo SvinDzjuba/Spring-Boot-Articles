@@ -10,9 +10,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.util.Optional;
-
-
 @SpringBootApplication
 @EnableMongoRepositories
 public class SpringBootArticlesApplication implements CommandLineRunner {
@@ -51,7 +48,7 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 					",\nTags: " + article.getTags()
 		);
 	}
-	public void showUserById(String userId){
+	public void showUserById(String userId) {
 		User user = userRepo.findUserById(userId);
 		if (user != null){
 			System.out.println(
@@ -65,6 +62,11 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 			System.out.println("User not found with ID: " + userId);
 		}
 	}
+
+	public User getUserByEmail(String email) {
+		User user = userRepo.findUserByEmail(email);
+        return user;
+    }
 
 	@Override
 	public void run(String... args) throws Exception {

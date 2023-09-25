@@ -1,5 +1,6 @@
 package com.example.springbootarticles.models;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,17 +9,21 @@ import java.util.Date;
 @Document("users")
 public class User {
     @Id
-    private String id;
-    private String name;
-    private String email;
-    private String password;
-    private Date created_at;
-    private Date updated_at;
+    private @Getter @Setter  String id;
+    private @Getter @Setter String name;
+    private @Getter @Setter String username;
+    private @Getter @Setter String role;
+    private @Getter @Setter String email;
+    private @Getter @Setter String password;
+    private @Getter @Setter Date created_at;
+    private @Getter @Setter Date updated_at;
     private Subscription subscription;
 
-    public User(String id, String name, String email, String password, Date created_at, Date updated_at, Subscription subscription) {
+    public User(String id, String name, String username, String role, String email, String password, Date created_at, Date updated_at, Subscription subscription) {
         this.id = id;
         this.name = name;
+        this.username = username;
+        this.role = role;
         this.email = email;
         this.password = password;
         this.created_at = created_at;
@@ -26,54 +31,9 @@ public class User {
         this.subscription = subscription;
     }
 
-    public String getId() {
-        return id;
+    public Subscription getSubscriptionInfo() {
+        return this.subscription;
     }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Date getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
-    }
-
-    public Date getUpdated_at() {
-        return updated_at;
-    }
-
-    public void setUpdated_at(Date updated_at) {
-        this.updated_at = updated_at;
-    }
-
     public String getSubscription() {
         return
                 "\n\tPlan: " + subscription.getPlan() +

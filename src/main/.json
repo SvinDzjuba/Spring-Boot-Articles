@@ -1,0 +1,34 @@
+{
+    "_id": {
+        "$oid": "64fef86a34cd3b4f73c5a13b"
+    },
+    "name": "Daniil Drivissenko",
+    "email": "DriviDan@fake.mail",
+    "password": "sdnfg453jbsewerkhj",
+    "created_at": {
+        "$date": {
+            "$numberLong": "1677628800000"
+        }
+    },
+    "updated_at": {
+        "$date": {
+            "$numberLong": "1677628800000"
+        }
+    },
+    "subscription": {
+        "expDate": {
+            "$date": {
+                "$numberLong": "1698192000000"
+            }
+        },
+        "plan": "Gold Month",
+        "counter": {
+            "$numberInt": "0"
+        },
+        "currentMonth": {
+            "$date": {
+                "$numberLong": "1693526400000"
+            }
+        }
+    }
+}
