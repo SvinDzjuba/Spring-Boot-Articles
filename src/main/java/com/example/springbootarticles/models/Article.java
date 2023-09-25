@@ -1,10 +1,13 @@
 package com.example.springbootarticles.models;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+
 import java.util.Date;
 import java.util.List;
+
 
 @Document("articles")
 public class Article {
@@ -14,33 +17,11 @@ public class Article {
     private String content;
     private Date created_at;
     private Date updated_at;
-    private String user_id;
+    private ObjectId user_id;
     private int favoriteCount;
-    private List<Tag> tagList;
+    private Tag[] tagList;
 
-    public class Tag {
-        private String name;
-        public String getName() {
-            return name;
-        }
-    }
-    public String getTags() {
-        StringBuilder builder = new StringBuilder();
-        List<Tag> tags = tagList;
-        if (tags != null && !tags.isEmpty()) {
-            for (Tag tag : tags) {
-                builder.append(tag.getName()).append(", ");
-            }
-            // Remove the trailing comma and space
-            builder.setLength(builder.length() - 2);
-            builder.append("\n");
-        } else {
-            builder.append("No tags\n");
-        }
-        return builder.toString();
-    }
-
-    public Article(String title, String content, Date created_at, Date updated_at, String user_id, List<Tag> tagList, int favoriteCount) {
+    public Article(String title, String content, Date created_at, Date updated_at, ObjectId user_id, Tag[] tagList, int favoriteCount) {
         super();
         this.title = title;
         this.content = content;
@@ -91,11 +72,11 @@ public class Article {
         this.updated_at = updated_at;
     }
 
-    public String getUser_id() {
+    public ObjectId getUser_id() {
         return user_id;
     }
 
-    public void setUser_id(String user_id) {
+    public void setUser_id(ObjectId user_id) {
         this.user_id = user_id;
     }
 
@@ -107,11 +88,11 @@ public class Article {
         this.favoriteCount = favoriteCount;
     }
 
-    public List<Tag> getTagList() {
+    public Tag[] getTagList() {
         return tagList;
     }
 
-    public void setTagList(List<Tag> tagList) {
+    public void setTagList(Tag[] tagList) {
         this.tagList = tagList;
     }
 }

@@ -1,8 +1,10 @@
 package com.example.springbootarticles;
 
 import com.example.springbootarticles.models.Article;
+import com.example.springbootarticles.models.Comment;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.ArticleRepository;
+import com.example.springbootarticles.repositories.CommentRepository;
 import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -21,36 +23,38 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 	ArticleRepository articleRepo;
 	@Autowired
 	UserRepository userRepo;
+	@Autowired
+	CommentRepository commentRepo;
 
 	public static void main(String[] args) { SpringApplication.run(SpringBootArticlesApplication.class, args); }
 
-	public void showAllArticlesByCategory(String tag) {
-		articleRepo.findAll(tag).forEach(this::getArticleDetails);
-	}
-	public void showArticleById(String articleId) {
-		Article article = articleRepo.findArticleById(articleId);
-		if (article != null) {
-			System.out.println(
-					"\n--------- Article ---------" +
-						"\nTitle: " + article.getTitle() +
-						"\nContent: " + article.getContent() +
-						"\nLikes: " + article.getFavoriteCount() +
-						"\nTags: " + article.getTags() +
-						"-----------------------"
-			);
-		} else {
-			System.out.println("Article not found with ID: " + articleId);
-		}
-	}
-	public void getArticleDetails(Article article) {
-		System.out.println(
-				"---------------------" +
-					"\nArticle title: " + article.getTitle() +
-					",\nArticle Body: " + article.getContent() +
-					",\nLikes: " + article.getFavoriteCount() +
-					",\nTags: " + article.getTags()
-		);
-	}
+//	public void showAllArticlesByCategory(String tag) {
+//		articleRepo.findAll(tag).forEach(this::getArticleDetails);
+//	}
+//	public void showArticleById(String articleId) {
+//		Article article = articleRepo.findArticleById(articleId);
+//		if (article != null) {
+//			System.out.println(
+//					"\n--------- Article ---------" +
+//						"\nTitle: " + article.getTitle() +
+//						"\nContent: " + article.getContent() +
+//						"\nLikes: " + article.getFavoriteCount() +
+//						"\nTags: " + article.getTags() +
+//						"-----------------------"
+//			);
+//		} else {
+//			System.out.println("Article not found with ID: " + articleId);
+//		}
+//	}
+//	public void getArticleDetails(Article article) {
+//		System.out.println(
+//				"---------------------" +
+//					"\nArticle title: " + article.getTitle() +
+//					",\nArticle Body: " + article.getContent() +
+//					",\nLikes: " + article.getFavoriteCount() +
+//					",\nTags: " + article.getTags()
+//		);
+//	}
 	public void showUserById(String userId){
 		User user = userRepo.findUserById(userId);
 		if (user != null){
@@ -66,10 +70,29 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 		}
 	}
 
+//	public void showCommentById(String commentId){
+//		Comment comment = commentRepo.findCommentById(commentId);
+//		User user = userRepo.findUserById(comment.getUser_id());
+//		Article article = articleRepo.findArticleById(comment.getArticle_id());
+//		if (comment != null){
+//			System.out.println(
+//					"\n--------- Comment ---------" +
+//							"\nUser_Name: " + user.getName() +
+//							"\nArticle_Title: " + article.getTitle() +
+//							"\nComment: " + comment.getContent() +
+//							"\n-----------------------"
+//			);
+//		} else {
+//			System.out.println("Comment not found with ID: " + commentId);
+//		}
+//	}
+
+
 	@Override
 	public void run(String... args) throws Exception {
 //		showAllArticlesByCategory("Glassfish");
 //		showArticleById("64feeb3b62070be77772b96c");
-		showUserById("64fef86a34cd3b4f73c5a13b");
+//		showUserById("64fef86a34cd3b4f73c5a13b");
+//		showCommentById("65081aace6b5b60cd9f5e784");
 	}
 }

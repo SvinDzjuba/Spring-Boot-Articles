@@ -1,5 +1,6 @@
 package com.example.springbootarticles.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -74,6 +75,9 @@ public class User {
         this.updated_at = updated_at;
     }
 
+    public Subscription getSubscriptionInfo() {
+        return this.subscription;
+    }
     public String getSubscription() {
         return
                 "\n\tPlan: " + subscription.getPlan() +

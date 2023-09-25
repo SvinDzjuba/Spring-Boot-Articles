@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface ArticleRepository extends MongoRepository<Article, String> {
 
-    @Query(value="{id:'?0'}")
-    Article findArticleById(String id);
-
-    @Query(value="{'tagList': { $elemMatch: { 'name': '?0' } }}", fields="{'title' : 1, 'content' : 1, 'tagList.name': 1, 'favoriteCount':  1}")
-    List<Article> findAll(String tag);
+//    @Query(value="{id:'?0'}")
+//    Article findArticleById(String id);
+//
+//    @Query(value="{'tagList': { $elemMatch: { 'name': '?0' } }}", fields="{'title' : 1, 'content' : 1, 'tagList.name': 1, 'favoriteCount':  1}")
+//    List<Article> findAll(String tag);
 }

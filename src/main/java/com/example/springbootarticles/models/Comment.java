@@ -1,5 +1,6 @@
 package com.example.springbootarticles.models;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,8 +10,8 @@ import java.util.Date;
 public class Comment {
     @Id
     private String id;
-    private String user_id;
-    private String article_id;
+    private ObjectId user_id;
+    private ObjectId article_id;
     private String content;
     private Date created_at;
     private Date updated_at;
@@ -23,19 +24,19 @@ public class Comment {
         this.id = id;
     }
 
-    public String getUser_id() {
+    public ObjectId getUser_id() {
         return user_id;
     }
 
-    public void setUser_id(String user_id) {
+    public void setUser_id(ObjectId user_id) {
         this.user_id = user_id;
     }
 
-    public String getArticle_id() {
+    public ObjectId getArticle_id() {
         return article_id;
     }
 
-    public void setArticle_id(String article_id) {
+    public void setArticle_id(ObjectId article_id) {
         this.article_id = article_id;
     }
 
@@ -63,7 +64,7 @@ public class Comment {
         this.updated_at = updated_at;
     }
 
-    public Comment(String id, String user_id, String article_id, String content, Date created_at, Date updated_at) {
+    public Comment(String id, ObjectId user_id, ObjectId article_id, String content, Date created_at, Date updated_at) {
         this.id = id;
         this.user_id = user_id;
         this.article_id = article_id;
