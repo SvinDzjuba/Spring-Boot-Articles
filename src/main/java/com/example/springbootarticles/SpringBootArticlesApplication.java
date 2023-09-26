@@ -25,33 +25,33 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 
 	public static void main(String[] args) { SpringApplication.run(SpringBootArticlesApplication.class, args); }
 
-	public void showAllArticlesByCategory(String tag) {
-		articleRepo.findAll(tag).forEach(this::getArticleDetails);
-	}
-	public void showArticleById(String articleId) {
-		Article article = articleRepo.findArticleById(articleId);
-		if (article != null) {
-			System.out.println(
-					"\n--------- Article ---------" +
-						"\nTitle: " + article.getTitle() +
-						"\nContent: " + article.getContent() +
-						"\nLikes: " + article.getFavoriteCount() +
-						"\nTags: " + article.getTags() +
-						"-----------------------"
-			);
-		} else {
-			System.out.println("Article not found with ID: " + articleId);
-		}
-	}
-	public void getArticleDetails(Article article) {
-		System.out.println(
-				"---------------------" +
-					"\nArticle title: " + article.getTitle() +
-					",\nArticle Body: " + article.getContent() +
-					",\nLikes: " + article.getFavoriteCount() +
-					",\nTags: " + article.getTags()
-		);
-	}
+//	public void showAllArticlesByCategory(String tag) {
+//		articleRepo.findAll(tag).forEach(this::getArticleDetails);
+//	}
+//	public void showArticleById(String articleId) {
+//		Article article = articleRepo.findArticleById(articleId);
+//		if (article != null) {
+//			System.out.println(
+//					"\n--------- Article ---------" +
+//						"\nTitle: " + article.getTitle() +
+//						"\nContent: " + article.getContent() +
+//						"\nLikes: " + article.getFavoriteCount() +
+//						"\nTags: " + article.getTags() +
+//						"-----------------------"
+//			);
+//		} else {
+//			System.out.println("Article not found with ID: " + articleId);
+//		}
+//	}
+//	public void getArticleDetails(Article article) {
+//		System.out.println(
+//				"---------------------" +
+//					"\nArticle title: " + article.getTitle() +
+//					",\nArticle Body: " + article.getContent() +
+//					",\nLikes: " + article.getFavoriteCount() +
+//					",\nTags: " + article.getTags()
+//		);
+//	}
 	public void showUserById(String userId) {
 		User user = userRepo.findUserById(userId);
 		if (user != null){
