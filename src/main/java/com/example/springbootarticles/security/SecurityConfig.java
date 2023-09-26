@@ -45,8 +45,9 @@ public class SecurityConfig  {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/**").authenticated()
-                            .requestMatchers("/auth/login").permitAll()
-                                .anyRequest().authenticated())
+                        .requestMatchers("/auth/login").permitAll()
+                        .anyRequest().authenticated()
+                )
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);

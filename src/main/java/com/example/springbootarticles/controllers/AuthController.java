@@ -63,7 +63,7 @@ public class AuthController {
         try {
             authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         } catch (Exception e) {
-            // Handle exceptions
+            logger.warn("Exception occurred while configuring AuthenticationManagerBuilder : {}", e.getMessage());
         }
     }
 

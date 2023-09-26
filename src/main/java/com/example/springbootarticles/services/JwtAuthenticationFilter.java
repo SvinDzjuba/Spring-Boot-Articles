@@ -38,7 +38,6 @@ public class JwtAuthenticationFilter implements Filter {
         String username = null;
         String token = null;
         if (requestHeader != null && requestHeader.startsWith("Bearer")) {
-//        if (requestHeader != null) {
             token = requestHeader.substring(7);
             try {
                 username = this.jwtHelper.getUsernameFromToken(token);
