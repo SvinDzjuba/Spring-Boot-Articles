@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("auth")
 public class AuthController {
 
     @Autowired
@@ -31,7 +31,7 @@ public class AuthController {
 
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    @PostMapping("/login")
+    @PostMapping("login")
     public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
 
         this.doAuthenticate(request.getEmail(), request.getPassword());

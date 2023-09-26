@@ -2,8 +2,7 @@ package com.example.springbootarticles.services;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
+import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -20,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class JwtAuthenticationFilter {
+public class JwtAuthenticationFilter implements Filter {
     private final Logger logger = LoggerFactory.getLogger(OncePerRequestFilter.class);
 
     @Autowired
@@ -29,14 +28,16 @@ public class JwtAuthenticationFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, IOException {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         // Authorization
-
-        String requestHeader = request.getHeader("Authorization");
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String requestHeader = httpRequest.getHeader("Authorization");
         logger.info(" Header :  {}", requestHeader);
         String username = null;
         String token = null;
+        System.out.println(requestHeader);
         if (requestHeader != null && requestHeader.startsWith("Bearer")) {
             token = requestHeader.substring(7);
             try {
@@ -67,7 +68,7 @@ public class JwtAuthenticationFilter {
 
                 // set the authentication
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpRequest));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
 
@@ -76,6 +77,7 @@ public class JwtAuthenticationFilter {
             }
 
         }
-        filterChain.doFilter(request, response);
+        chain.doFilter(request, response);
     }
+
 }

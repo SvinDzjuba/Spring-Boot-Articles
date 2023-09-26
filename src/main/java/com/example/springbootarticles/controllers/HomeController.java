@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HomeController {
     Logger logger = LoggerFactory.getLogger(HomeController.class);
 
-    @RequestMapping("/test")
+    @RequestMapping("test")
     public String test() {
         this.logger.warn("This is working message");
         return "Testing message";

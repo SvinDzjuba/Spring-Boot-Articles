@@ -18,8 +18,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Autowired
@@ -27,17 +25,6 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter filter;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-//    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-    }
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -49,7 +36,7 @@ public class SecurityConfig {
                                 .anyRequest().authenticated())
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.addFilterBefore((Filter) filter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
