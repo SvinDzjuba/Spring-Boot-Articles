@@ -64,9 +64,12 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 	}
 
 	public User getUserByEmail(String email) {
-		User user = userRepo.findUserByEmail(email);
-        return user;
+        return userRepo.findUserByEmail(email);
     }
+
+	public User getUserByUsernameAndPassword(String username, String password) {
+        return userRepo.findUserByUsernameAndPassword(username, password);
+	}
 
 	@Override
 	public void run(String... args) throws Exception {
