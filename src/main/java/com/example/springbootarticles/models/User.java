@@ -1,5 +1,6 @@
 package com.example.springbootarticles.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,6 +35,7 @@ public class User {
     public Subscription getSubscriptionInfo() {
         return this.subscription;
     }
+    
     public String getSubscription() {
         return
                 "\n\tPlan: " + subscription.getPlan() +
