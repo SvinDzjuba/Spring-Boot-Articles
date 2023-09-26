@@ -12,9 +12,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.util.Optional;
-
-
 @SpringBootApplication
 @EnableMongoRepositories
 public class SpringBootArticlesApplication implements CommandLineRunner {
@@ -28,34 +25,34 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 
 	public static void main(String[] args) { SpringApplication.run(SpringBootArticlesApplication.class, args); }
 
-//	public void showAllArticlesByCategory(String tag) {
-//		articleRepo.findAll(tag).forEach(this::getArticleDetails);
-//	}
-//	public void showArticleById(String articleId) {
-//		Article article = articleRepo.findArticleById(articleId);
-//		if (article != null) {
-//			System.out.println(
-//					"\n--------- Article ---------" +
-//						"\nTitle: " + article.getTitle() +
-//						"\nContent: " + article.getContent() +
-//						"\nLikes: " + article.getFavoriteCount() +
-//						"\nTags: " + article.getTags() +
-//						"-----------------------"
-//			);
-//		} else {
-//			System.out.println("Article not found with ID: " + articleId);
-//		}
-//	}
-//	public void getArticleDetails(Article article) {
-//		System.out.println(
-//				"---------------------" +
-//					"\nArticle title: " + article.getTitle() +
-//					",\nArticle Body: " + article.getContent() +
-//					",\nLikes: " + article.getFavoriteCount() +
-//					",\nTags: " + article.getTags()
-//		);
-//	}
-	public void showUserById(String userId){
+	public void showAllArticlesByCategory(String tag) {
+		articleRepo.findAll(tag).forEach(this::getArticleDetails);
+	}
+	public void showArticleById(String articleId) {
+		Article article = articleRepo.findArticleById(articleId);
+		if (article != null) {
+			System.out.println(
+					"\n--------- Article ---------" +
+						"\nTitle: " + article.getTitle() +
+						"\nContent: " + article.getContent() +
+						"\nLikes: " + article.getFavoriteCount() +
+						"\nTags: " + article.getTags() +
+						"-----------------------"
+			);
+		} else {
+			System.out.println("Article not found with ID: " + articleId);
+		}
+	}
+	public void getArticleDetails(Article article) {
+		System.out.println(
+				"---------------------" +
+					"\nArticle title: " + article.getTitle() +
+					",\nArticle Body: " + article.getContent() +
+					",\nLikes: " + article.getFavoriteCount() +
+					",\nTags: " + article.getTags()
+		);
+	}
+	public void showUserById(String userId) {
 		User user = userRepo.findUserById(userId);
 		if (user != null){
 			System.out.println(
@@ -70,23 +67,13 @@ public class SpringBootArticlesApplication implements CommandLineRunner {
 		}
 	}
 
-//	public void showCommentById(String commentId){
-//		Comment comment = commentRepo.findCommentById(commentId);
-//		User user = userRepo.findUserById(comment.getUser_id());
-//		Article article = articleRepo.findArticleById(comment.getArticle_id());
-//		if (comment != null){
-//			System.out.println(
-//					"\n--------- Comment ---------" +
-//							"\nUser_Name: " + user.getName() +
-//							"\nArticle_Title: " + article.getTitle() +
-//							"\nComment: " + comment.getContent() +
-//							"\n-----------------------"
-//			);
-//		} else {
-//			System.out.println("Comment not found with ID: " + commentId);
-//		}
-//	}
+	public User getUserByEmail(String email) {
+        return userRepo.findUserByEmail(email);
+    }
 
+	public User getUserByUsernameAndPassword(String username, String password) {
+        return userRepo.findUserByUsernameAndPassword(username, password);
+	}
 
 	@Override
 	public void run(String... args) throws Exception {
