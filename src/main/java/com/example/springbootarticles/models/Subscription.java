@@ -1,7 +1,12 @@
 package com.example.springbootarticles.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Date;
 
+@Getter
+@Setter
 public class Subscription {
     private int counter;
     private Date expDate;
@@ -11,38 +16,6 @@ public class Subscription {
         this.counter = counter;
         this.expDate = expDate;
         this.plan = plan;
-        this.currentMonth = currentMonth;
-    }
-
-    public int getCounter() {
-        return counter;
-    }
-
-    public void setCounter(int counter) {
-        this.counter = counter;
-    }
-
-    public Date getExpDate() {
-        return expDate;
-    }
-
-    public void setExpDate(Date expDate) {
-        this.expDate = expDate;
-    }
-
-    public String getPlan() {
-        return plan;
-    }
-
-    public void setPlan(String plan) {
-        this.plan = plan;
-    }
-
-    public Date getCurrentMonth() {
-        return currentMonth;
-    }
-
-    public void setCurrentMonth(Date currentMonth) {
         this.currentMonth = currentMonth;
     }
 

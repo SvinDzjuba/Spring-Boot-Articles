@@ -7,17 +7,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
+@Getter
+@Setter
 @Document("users")
 public class User {
     @Id
-    private @Getter @Setter  String id;
-    private @Getter @Setter String name;
-    private @Getter @Setter String username;
-    private @Getter @Setter String role;
-    private @Getter @Setter String email;
-    private @Getter @Setter String password;
-    private @Getter @Setter Date created_at;
-    private @Getter @Setter Date updated_at;
+    private String id;
+    private String name;
+    private String username;
+    private String role;
+    private String email;
+    private String password;
+    private Date created_at;
+    private Date updated_at;
     private Subscription subscription;
 
     public User(String id, String name, String username, String role, String email, String password, Date created_at, Date updated_at, Subscription subscription) {

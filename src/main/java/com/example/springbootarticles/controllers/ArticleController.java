@@ -21,7 +21,7 @@ public class ArticleController {
         public String saveArticle(@RequestBody Article article){
             articleRepo.save(article);
 
-            return "Added Article";
+            return "Added article with title: " + article.getTitle();
         }
 
         @GetMapping("/findAllArticles")
@@ -37,6 +37,7 @@ public class ArticleController {
         if (articleData.isPresent()){
             Article _article = articleData.get();
             _article.setTitle(article.getTitle());
+            _article.setDemo(article.getDemo());
             _article.setContent(article.getContent());
             _article.setUser_id(article.getUser_id());
             _article.setCreated_at(article.getCreated_at());
@@ -55,6 +56,6 @@ public class ArticleController {
         public String deleteArticle(@PathVariable String id){
             articleRepo.deleteById(id);
 
-            return "Deleted Successfully";
+            return "Article with id: {" + id + "} was deleted successfully";
         }
 }
