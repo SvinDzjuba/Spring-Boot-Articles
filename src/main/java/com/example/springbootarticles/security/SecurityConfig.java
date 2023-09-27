@@ -2,8 +2,6 @@ package com.example.springbootarticles.security;
 
 import com.example.springbootarticles.services.JwtAuthenticationEntryPoint;
 import com.example.springbootarticles.services.JwtAuthenticationFilter;
-import jakarta.servlet.Filter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

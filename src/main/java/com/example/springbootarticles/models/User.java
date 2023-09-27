@@ -1,6 +1,5 @@
 package com.example.springbootarticles.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -41,9 +40,8 @@ public class User {
     public String getSubscription() {
         return
                 "\n\tPlan: " + subscription.getPlan() +
-                "\n\tCounter: " + subscription.getCounter() +
-                "\n\tExpiration Date: " + subscription.getExpDate() +
-                "\n\tCurrent Month: " + subscription.getCurrentMonth();
+                "\n\tArticle remaining: " + subscription.getRemains() +
+                "\n\tExpiration Date: " + subscription.getExpires_at();
     }
 
     public void setSubscription(Subscription subscription) {

@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -35,5 +34,15 @@ public class Article {
         this.user_id = user_id;
         this.tagList = tagList;
         this.favoriteCount = favoriteCount;
+    }
+
+    public String demoArticle(Article article) {
+        return "---- Article ----" +
+                "\n" + article.getTitle() +
+                "\n" + article.getDemo() +
+                "\nLikes: " + article.getFavoriteCount() +
+                "\nTags: " + article.getTagList().toString() +
+                "\nPosted: " + article.getCreated_at() +
+                "\nLast update: " + article.getUpdated_at();
     }
 }

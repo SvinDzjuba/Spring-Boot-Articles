@@ -1,6 +1,5 @@
 package com.example.springbootarticles.controllers;
 
-import com.example.springbootarticles.models.Article;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +17,18 @@ public class UserController {
     @Autowired
     private UserRepository userRepo;
 
-    @PostMapping("/addUser")
-    public String saveUser(@RequestBody User user){
-        userRepo.save(user);
-
-        return "Added User";
-    }
-
-    @GetMapping("/findAllUsers")
+    @GetMapping("/users")
     public List<User> getUsers(){
         return userRepo.findAll();
     }
 
-    @PutMapping("/updateUser/{id}")
+    @PostMapping("/users")
+    public String saveUser(@RequestBody User user){
+        userRepo.save(user);
+        return "Added user with email: " + user.getEmail();
+    }
+
+    @PutMapping("/users/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") String id, @RequestBody User user)
     {
         Optional<User> userData = userRepo.findById(id);
@@ -43,18 +41,18 @@ public class UserController {
             _user.setCreated_at(user.getCreated_at());
             _user.setUpdated_at(user.getUpdated_at());
             _user.setSubscription(user.getSubscriptionInfo());
+
             return new ResponseEntity<>(userRepo.save(_user), HttpStatus.OK);
 
-        }else{
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
 
-    @DeleteMapping("/deleteUser/{id}")
+    @DeleteMapping("/users/{id}")
     public String deleteUser(@PathVariable String id){
         userRepo.deleteById(id);
-
-        return "Deleted Succesfully";
+        return "User with id:{" + id + "} was deleted successfully";
     }
 }

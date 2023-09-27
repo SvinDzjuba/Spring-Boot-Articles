@@ -16,19 +16,18 @@ public class CommentController {
     @Autowired
     private CommentRepository commentRepo;
 
-    @PostMapping("/addComment")
-    public String saveComment(@RequestBody Comment comment){
-        commentRepo.save(comment);
-
-        return "Added comment";
-    }
-
-    @GetMapping("/findAllComments")
+    @GetMapping("/comments")
     public List<Comment> getComments(){
         return commentRepo.findAll();
     }
 
-    @PutMapping("/updateComment/{id}")
+    @PostMapping("/comments")
+    public String saveComment(@RequestBody Comment comment){
+        commentRepo.save(comment);
+        return "Comment was added successfully";
+    }
+
+    @PutMapping("/comments/{id}")
     public ResponseEntity<Comment> updateComment(@PathVariable("id") String id, @RequestBody Comment comment)
     {
         Optional<Comment> commentData = commentRepo.findById(id);
@@ -40,17 +39,16 @@ public class CommentController {
             _comment.setContent(comment.getContent());
             _comment.setCreated_at(comment.getCreated_at());
             _comment.setUpdated_at(comment.getUpdated_at());
+
             return new ResponseEntity<>(commentRepo.save(_comment), HttpStatus.OK);
-        }else{
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-
-    @DeleteMapping("/deleteComment/{id}")
+    @DeleteMapping("/comments/{id}")
     public String deleteComment(@PathVariable String id){
         commentRepo.deleteById(id);
-
-        return "Deleted Successfully";
+        return "Comment with id: {" + id + "} was deleted successfully";
     }
 }

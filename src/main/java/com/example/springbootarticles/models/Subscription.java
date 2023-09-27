@@ -8,16 +8,13 @@ import java.util.Date;
 @Getter
 @Setter
 public class Subscription {
-    private int counter;
-    private Date expDate;
+    private int remains;
+    private Date expires_at;
     private String plan;
 
-    public Subscription(int counter, Date expDate, String plan, Date currentMonth) {
-        this.counter = counter;
-        this.expDate = expDate;
+    public Subscription(int remains, Date expires_at, String plan) {
+        this.remains = remains;
+        this.expires_at = expires_at;
         this.plan = plan;
-        this.currentMonth = currentMonth;
     }
-
-    private Date currentMonth;
 }
