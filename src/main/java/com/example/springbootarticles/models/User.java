@@ -8,6 +8,9 @@ import java.util.Date;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Document("users")
 public class User {
     @Id
@@ -19,32 +22,6 @@ public class User {
     private String password;
     private Date created_at;
     private Date updated_at;
+    @Getter @Setter
     private Subscription subscription;
-
-    public User(String id, String name, String username, String role, String email, String password, Date created_at, Date updated_at, Subscription subscription) {
-        this.id = id;
-        this.name = name;
-        this.username = username;
-        this.role = role;
-        this.email = email;
-        this.password = password;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
-        this.subscription = subscription;
-    }
-
-    public Subscription getSubscriptionInfo() {
-        return this.subscription;
-    }
-    
-    public String getSubscription() {
-        return
-                "\n\tPlan: " + subscription.getPlan() +
-                "\n\tArticle remaining: " + subscription.getRemains() +
-                "\n\tExpiration Date: " + subscription.getExpires_at();
-    }
-
-    public void setSubscription(Subscription subscription) {
-        this.subscription = subscription;
-    }
 }

@@ -1,7 +1,6 @@
 package com.example.springbootarticles.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,6 +10,9 @@ import java.util.Date;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Document("articles")
 public class Article {
     @Id
@@ -24,25 +26,15 @@ public class Article {
     private int favoriteCount;
     private Tag[] tagList;
 
-    public Article(String title, String demo, String content, Date created_at, Date updated_at, ObjectId user_id, Tag[] tagList, int favoriteCount) {
-        super();
-        this.title = title;
-        this.demo = demo;
-        this.content = content;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
-        this.user_id = user_id;
-        this.tagList = tagList;
-        this.favoriteCount = favoriteCount;
-    }
-
-    public String demoArticle(Article article) {
-        return "---- Article ----" +
-                "\n" + article.getTitle() +
-                "\n" + article.getDemo() +
-                "\nLikes: " + article.getFavoriteCount() +
-                "\nTags: " + article.getTagList().toString() +
-                "\nPosted: " + article.getCreated_at() +
-                "\nLast update: " + article.getUpdated_at();
+    public Article demoArticle(Article article) throws InstantiationException, IllegalAccessException {
+        Article demoArticle = Article.class.newInstance();
+        demoArticle.setTitle(article.getTitle());
+        demoArticle.setDemo(article.getDemo());
+        demoArticle.setFavoriteCount(article.getFavoriteCount());
+        demoArticle.setTagList(article.getTagList());
+        demoArticle.setCreated_at(article.getCreated_at());
+        demoArticle.setUpdated_at(article.getUpdated_at());
+        demoArticle.setUser_id(article.getUser_id());
+        return demoArticle;
     }
 }

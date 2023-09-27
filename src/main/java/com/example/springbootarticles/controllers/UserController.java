@@ -40,7 +40,7 @@ public class UserController {
             _user.setPassword(user.getPassword());
             _user.setCreated_at(user.getCreated_at());
             _user.setUpdated_at(user.getUpdated_at());
-            _user.setSubscription(user.getSubscriptionInfo());
+            _user.setSubscription(user.getSubscription());
 
             return new ResponseEntity<>(userRepo.save(_user), HttpStatus.OK);
 

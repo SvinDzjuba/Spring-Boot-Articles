@@ -1,7 +1,9 @@
 package com.example.springbootarticles.controllers;
 
 import com.example.springbootarticles.models.Article;
+import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.ArticleRepository;
+import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,14 +11,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("api")
 public class ArticleController {
 
     @Autowired
     private ArticleRepository articleRepo;
+
+    @Autowired
+    private UserRepository userRepo;
 
     /* CRUD for articles */
     @GetMapping("/articles")
@@ -60,14 +72,32 @@ public class ArticleController {
 
     /* Additional requests */
     @GetMapping("/articles/{id}")
-    public Article showArticle(@PathVariable String id) {
+    public Article showArticle(@PathVariable String id) throws InstantiationException, IllegalAccessException, ParseException {
+        Article article = articleRepo.findById(id).orElse(null);
         // Get authorized user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
+        if (article != null) {
+            if (authentication != null && authentication.isAuthenticated()) {
+                String username = authentication.getName();
+                User user = userRepo.findByUsername(username);
+                // Convert expiration and current date to string then compare them in Date format
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String currentDate = formatter.format(new Date());
+                String expirationDate = formatter.format(user.getSubscription().getExpires_at());
+                if (formatter.parse(expirationDate).after(formatter.parse(currentDate))) {
+                    // Subscription is active
+                    if (user.getSubscription().getRemains() > 0) {
+                        user.getSubscription().setRemains(user.getSubscription().getRemains() - 1);
+                        userRepo.save(user);
+                        return article;
+                    }
+                    return article.demoArticle(article);
+                }
+            }
+            // Non authenticated user - demo article
+            return article.demoArticle(article);
         } else {
-            // Demo here
+            return null;
         }
     }
 }
