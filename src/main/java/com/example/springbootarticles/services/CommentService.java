@@ -11,6 +11,9 @@ import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+import java.util.Optional;
+
 @Service
 public class CommentService {
     @Autowired
@@ -26,10 +29,10 @@ public class CommentService {
         Comment comment = commentRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Comment not found!"));
 
-        Article article = articleRepo.findById(comment.getArticle_id().toString())
+        Article article = articleRepo.findById(comment.getArticle_id())
                 .orElseThrow(() -> new NotFoundException("Article not found!"));
 
-        User author = userRepo.findById(comment.getUser_id().toString())
+        User author = userRepo.findById(comment.getUser_id())
                 .orElseThrow(() -> new NotFoundException("User not found!"));
 
         CommentResponse commentResponse = new CommentResponse();
@@ -40,5 +43,23 @@ public class CommentService {
         commentResponse.setAuthor(author);
 
         return commentResponse;
+    }
+
+    public void updateCommentHandler(String id, Comment comment) throws NotFoundException {
+        Optional<Comment> commentData = commentRepo.findById(id);
+        if (commentData.isPresent()){
+            Comment commentToUpdate = commentData.get();
+            User user = userRepo.findById(commentToUpdate.getUser_id())
+                    .orElseThrow(() -> new NotFoundException("User of comment not found!"));
+            Article article = articleRepo.findById(commentToUpdate.getArticle_id())
+                    .orElseThrow(() -> new NotFoundException("Article of comment not found!"));
+            commentToUpdate.setContent(comment.getContent() == null ? commentToUpdate.getContent() : comment.getContent());
+            commentToUpdate.setUpdated_at(new Date());
+            commentToUpdate.setUser_id(user.getId() == null ? commentToUpdate.getUser_id() : user.getId());
+            commentToUpdate.setArticle_id(article.getId() == null ? commentToUpdate.getArticle_id() : article.getId());
+            commentRepo.save(commentToUpdate);
+        } else {
+            throw new NotFoundException("Comment not found!");
+        }
     }
 }

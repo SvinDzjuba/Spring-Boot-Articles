@@ -17,8 +17,10 @@ import java.util.Date;
 public class Comment {
     @Id
     private String id;
-    private ObjectId user_id;
-    private ObjectId article_id;
+//    private ObjectId user_id;
+//    private ObjectId article_id;
+    private String user_id;
+    private String article_id;
     private String content;
     private Date created_at;
     private Date updated_at;

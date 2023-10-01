@@ -1,12 +1,15 @@
 package com.example.springbootarticles.controllers;
 
+import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.UserRepository;
+import com.example.springbootarticles.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
 import java.util.List;
 
 @RestController
@@ -15,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/users")
     public List<User> getUsers() {
@@ -28,23 +34,14 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") String id, @RequestBody User user) {
-        User userData = userRepo.findById(id).orElse(null);
-        if (userData != null) {
-            User newUser = new User(
-                    id,
-                    user.getName(),
-                    user.getUsername(),
-                    user.getRole(),
-                    user.getEmail(),
-                    user.getPassword(),
-                    userData.getCreated_at(),
-                    userData.getUpdated_at(),
-                    userData.getSubscription()
-            );
-            return new ResponseEntity<>(userRepo.save(newUser), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> updateUser(@PathVariable("id") String id, @RequestBody User user) {
+        try {
+            userService.updateUserHandler(id, user);
+            return new ResponseEntity<>("User was updated successfully!", HttpStatus.OK);
+        } catch (ConstraintViolationException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 

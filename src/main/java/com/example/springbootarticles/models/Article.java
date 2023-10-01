@@ -12,6 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 @Document("articles")
 public class Article {
     @Id
@@ -25,18 +26,4 @@ public class Article {
     private String author_id;
     private int favoriteCount;
     private String[] tagList;
-
-    public Article setArticle(Article article, User author) {
-        return new Article(
-                this.id,
-                article.getTitle(),
-                article.getDemo(),
-                article.getContent(),
-                this.created_at,
-                new Date(),
-                author.getId(),
-                article.getFavoriteCount(),
-                article.getTagList()
-        );
-    }
 }
