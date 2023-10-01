@@ -4,6 +4,7 @@ package com.example.springbootarticles.controllers;
 import com.example.springbootarticles.models.JwtRequest;
 import com.example.springbootarticles.models.JwtResponse;
 import com.example.springbootarticles.services.JwtHelper;
+import com.example.springbootarticles.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class AuthController {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private AuthenticationManager manager;
@@ -64,6 +68,7 @@ public class AuthController {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, password);
         try {
             manager.authenticate(authentication);
+            userService.checkAndUpdateUserSubscription(username);
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException(" Invalid Username or Password  !!");
         }

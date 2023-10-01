@@ -7,6 +7,7 @@ import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.ArticleRepository;
 import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.ArticleService;
+import com.example.springbootarticles.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class ArticleController {
     private ArticleRepository articleRepo;
 
     @Autowired
-    private UserRepository userRepo;
+    private UserService userService;
 
     @Autowired
     private ArticleService articleService;
@@ -77,25 +78,7 @@ public class ArticleController {
         // Get authorized user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (article.isPresent()) {
-            if (authentication != null && authentication.isAuthenticated()) {
-                String username = authentication.getName();
-                User user = userRepo.findByUsername(username);
-                // Convert expiration and current date to string then compare them in Date format
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                String currentDate = formatter.format(new Date());
-                String expirationDate = formatter.format(user.getSubscription().getExpires_at());
-                if (formatter.parse(expirationDate).after(formatter.parse(currentDate))) {
-                    // Subscription is active
-                    if (user.getSubscription().getRemains() > 0) {
-                        user.getSubscription().setRemains(user.getSubscription().getRemains() - 1);
-                        userRepo.save(user);
-                        return articleService.getArticleWithDetails(id, "ORIGINAL");
-                    }
-                    return articleService.getArticleWithDetails(id, "DEMO");
-                }
-            }
-            // Non authenticated user - demo article
-            return articleService.getArticleWithDetails(id, "DEMO");
+            return userService.checkUserSubscriptionAvailability(authentication, id);
         } else {
             throw new NotFoundException("Article not found!");
         }
