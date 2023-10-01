@@ -1,10 +1,9 @@
 package com.example.springbootarticles.models;
 
 import lombok.*;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
 
@@ -22,19 +21,22 @@ public class Article {
     private String content;
     private Date created_at;
     private Date updated_at;
-    private ObjectId user_id;
+    @Field("user_id")
+    private String author_id;
     private int favoriteCount;
-    private Tag[] tagList;
+    private String[] tagList;
 
-    public Article demoArticle(Article article) throws InstantiationException, IllegalAccessException {
-        Article demoArticle = Article.class.newInstance();
-        demoArticle.setTitle(article.getTitle());
-        demoArticle.setDemo(article.getDemo());
-        demoArticle.setFavoriteCount(article.getFavoriteCount());
-        demoArticle.setTagList(article.getTagList());
-        demoArticle.setCreated_at(article.getCreated_at());
-        demoArticle.setUpdated_at(article.getUpdated_at());
-        demoArticle.setUser_id(article.getUser_id());
-        return demoArticle;
+    public Article setArticle(Article article, User author) {
+        return new Article(
+                this.id,
+                article.getTitle(),
+                article.getDemo(),
+                article.getContent(),
+                this.created_at,
+                new Date(),
+                author.getId(),
+                article.getFavoriteCount(),
+                article.getTagList()
+        );
     }
 }

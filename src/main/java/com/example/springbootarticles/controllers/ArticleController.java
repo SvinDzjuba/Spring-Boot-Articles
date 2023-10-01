@@ -1,9 +1,13 @@
 package com.example.springbootarticles.controllers;
 
+import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.Article;
+import com.example.springbootarticles.models.ArticleResponse;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.ArticleRepository;
 import com.example.springbootarticles.repositories.UserRepository;
+import com.example.springbootarticles.services.ArticleService;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -29,6 +31,9 @@ public class ArticleController {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private ArticleService articleService;
 
     /* CRUD for articles */
     @GetMapping("/articles")
@@ -43,22 +48,13 @@ public class ArticleController {
     }
 
     @PutMapping("/articles/{id}")
-    public ResponseEntity<Article> updateArticle(@PathVariable("id") String id, @RequestBody Article article)
-    {
-        Optional<Article> articleData = articleRepo.findById(id);
-
-        if (articleData.isPresent()){
-            Article _article = articleData.get();
-            _article.setTitle(article.getTitle());
-            _article.setDemo(article.getDemo());
-            _article.setContent(article.getContent());
-            _article.setUser_id(article.getUser_id());
-            _article.setCreated_at(article.getCreated_at());
-            _article.setUpdated_at(article.getUpdated_at());
-            _article.setFavoriteCount(article.getFavoriteCount());
-            _article.setTagList(article.getTagList());
-
-            return new ResponseEntity<>(articleRepo.save(_article), HttpStatus.OK);
+    public ResponseEntity<Article> updateArticle(@PathVariable("id") String id, @RequestBody Article article) {
+        Article articleData = articleRepo.findById(id).orElse(null);
+        if (articleData != null){
+            User author = userRepo.findById(articleData.getAuthor_id())
+                    .orElseThrow(() -> new NotFoundException("Author of article not found!"));
+            Article newArticle = articleData.setArticle(article, author);
+            return new ResponseEntity<>(articleRepo.save(newArticle), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -70,13 +66,13 @@ public class ArticleController {
         return "Article with id: {" + id + "} was deleted successfully";
     }
 
-    /* Additional requests */
+    /* Read particular article */
     @GetMapping("/articles/{id}")
-    public Article showArticle(@PathVariable String id) throws InstantiationException, IllegalAccessException, ParseException {
-        Article article = articleRepo.findById(id).orElse(null);
+    public ArticleResponse showArticle(@PathVariable String id) throws ParseException, RuntimeException {
+        Optional<Article> article = articleRepo.findById(id);
         // Get authorized user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (article != null) {
+        if (article.isPresent()) {
             if (authentication != null && authentication.isAuthenticated()) {
                 String username = authentication.getName();
                 User user = userRepo.findByUsername(username);
@@ -89,15 +85,15 @@ public class ArticleController {
                     if (user.getSubscription().getRemains() > 0) {
                         user.getSubscription().setRemains(user.getSubscription().getRemains() - 1);
                         userRepo.save(user);
-                        return article;
+                        return articleService.getArticleWithDetails(id, "ORIGINAL");
                     }
-                    return article.demoArticle(article);
+                    return articleService.getArticleWithDetails(id, "DEMO");
                 }
             }
             // Non authenticated user - demo article
-            return article.demoArticle(article);
+            return articleService.getArticleWithDetails(id, "DEMO");
         } else {
-            return null;
+            throw new NotFoundException("Article not found!");
         }
     }
 }
