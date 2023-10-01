@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -73,46 +72,76 @@ public class UserService {
         if (user.getSubscription().getResets_at().before(now)) {
             // Subscription is need to be reset
             String currentPlan = user.getSubscription().getPlan();
-            switch (currentPlan) {
+            String[] planMonth = currentPlan.split(" ");
+            newMonthDate = addMonthToCurrentDate();
+            switch (planMonth[1]) {
                 case "Free":
                     user.getSubscription().setRemains(5);
-                    newMonthDate = addMonthToCurrentDate();
                     user.getSubscription().setExpires_at(newMonthDate);
                     user.getSubscription().setResets_at(newMonthDate);
                     userRepo.save(user);
                     break;
-                case "Silver Month":
-                    user.getSubscription().setRemains(10);
-                    newMonthDate = addMonthToCurrentDate();
-                    user.getSubscription().setExpires_at(newMonthDate);
-                    user.getSubscription().setResets_at(newMonthDate);
-                    userRepo.save(user);
+                case "Month":
+                    // Silver/Gold Month is expired - downgrade to Free
+                    downgradeUserSubscriptionToFree(user);
                     break;
-                case "Silver Year":
-                    user.getSubscription().setRemains(10);
-                    newYearDate = addYearToCurrentDate();
-                    newMonthDate = addMonthToCurrentDate();
-                    user.getSubscription().setExpires_at(newYearDate);
-                    user.getSubscription().setResets_at(newMonthDate);
-                    userRepo.save(user);
-                    break;
-                case "Gold Month":
-                    user.getSubscription().setRemains(20);
-                    newMonthDate = addMonthToCurrentDate();
-                    user.getSubscription().setExpires_at(newMonthDate);
-                    user.getSubscription().setResets_at(newMonthDate);
-                    userRepo.save(user);
-                    break;
-                case "Gold Year":
-                    user.getSubscription().setRemains(20);
-                    newYearDate = addYearToCurrentDate();
-                    newMonthDate = addMonthToCurrentDate();
-                    user.getSubscription().setExpires_at(newYearDate);
-                    user.getSubscription().setResets_at(newMonthDate);
-                    userRepo.save(user);
+                case "Year":
+                    if (user.getSubscription().getExpires_at().before(now)) {
+                        // Silver/Gold Year is expired - downgrade to Free
+                        downgradeUserSubscriptionToFree(user);
+                    } else {
+                        // Silver/Gold Year is active - renew the reset date
+                        if (planMonth[0].equals("Silver")) {
+                            // Silver Year
+                            user.getSubscription().setRemains(10);
+                        } else {
+                            // Gold Year
+                            user.getSubscription().setRemains(20);
+                        }
+                        user.getSubscription().setResets_at(newMonthDate);
+                        userRepo.save(user);
+                    }
                     break;
             }
         }
+    }
+
+    public void downgradeUserSubscriptionToFree(User user) {
+        user.getSubscription().setPlan("Free");
+        user.getSubscription().setRemains(5);
+        newMonthDate = addMonthToCurrentDate();
+        user.getSubscription().setExpires_at(newMonthDate);
+        user.getSubscription().setResets_at(newMonthDate);
+        userRepo.save(user);
+    }
+
+    public void upgradeUserSubscription(String plan, User user) {
+        user.getSubscription().setPlan(plan);
+        newYearDate = addYearToCurrentDate();
+        newMonthDate = addMonthToCurrentDate();
+        switch (plan) {
+            case "Silver Month":
+                user.getSubscription().setRemains(10);
+                user.getSubscription().setExpires_at(newMonthDate);
+                user.getSubscription().setResets_at(newMonthDate);
+                break;
+            case "Gold Month":
+                user.getSubscription().setRemains(20);
+                user.getSubscription().setExpires_at(newMonthDate);
+                user.getSubscription().setResets_at(newMonthDate);
+                break;
+            case "Silver Year":
+                user.getSubscription().setRemains(10);
+                user.getSubscription().setExpires_at(newYearDate);
+                user.getSubscription().setResets_at(newMonthDate);
+                break;
+            case "Gold Year":
+                user.getSubscription().setRemains(20);
+                user.getSubscription().setExpires_at(newYearDate);
+                user.getSubscription().setResets_at(newMonthDate);
+                break;
+        }
+        userRepo.save(user);
     }
 
     public Date addMonthToCurrentDate() {

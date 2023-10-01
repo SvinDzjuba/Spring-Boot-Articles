@@ -7,10 +7,13 @@ import com.example.springbootarticles.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -45,10 +48,17 @@ public class UserController {
         }
     }
 
-
     @DeleteMapping("/users/{id}")
     public String deleteUser(@PathVariable String id) {
         userRepo.deleteById(id);
         return "User with id:{" + id + "} was deleted successfully";
     }
+
+    @PutMapping("/users/{id}/subscription")
+    public String upgradeSubscription(@RequestParam String subscription, @PathVariable String id) {
+        User user = userRepo.findById(id).orElseThrow(() -> new NotFoundException("User not found!"));
+        userService.upgradeUserSubscription(subscription, user);
+        return "User plan upgraded to " + subscription;
+    }
+
 }
