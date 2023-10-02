@@ -25,6 +25,8 @@ public class User {
     private String password;
     private Date created_at;
     private Date updated_at;
+    private String[] followers;
+    private String[] following;
     @Getter @Setter
     private Subscription subscription;
 }

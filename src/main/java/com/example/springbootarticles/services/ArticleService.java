@@ -62,4 +62,19 @@ public class ArticleService {
             throw new NotFoundException("Article not found!");
         }
     }
+
+    public void likeArticle(String id, boolean like) {
+        Optional<Article> articleData = articleRepo.findById(id);
+        if (articleData.isPresent()){
+            Article articleToUpdate = articleData.get();
+            if (like) {
+                articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() + 1);
+            } else {
+                articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() - 1);
+            }
+            articleRepo.save(articleToUpdate);
+        } else {
+            throw new NotFoundException("Article not found!");
+        }
+    }
 }

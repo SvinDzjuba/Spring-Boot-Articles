@@ -54,11 +54,31 @@ public class UserController {
         return "User with id:{" + id + "} was deleted successfully";
     }
 
-    @PutMapping("/users/{id}/subscription")
-    public String upgradeSubscription(@RequestParam String subscription, @PathVariable String id) {
-        User user = userRepo.findById(id).orElseThrow(() -> new NotFoundException("User not found!"));
+    @PutMapping("/users/subscription")
+    public String upgradeSubscription(@RequestParam String subscription) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepo.findByUsername(authentication.getName());
         userService.upgradeUserSubscription(subscription, user);
         return "User plan upgraded to " + subscription;
     }
 
+    @GetMapping("/users/{id}/follow")
+    public ResponseEntity<?> followUser(@PathVariable("id") String id) {
+        try {
+            userService.followToUser(id);
+            return new ResponseEntity<>("User was followed successfully!", HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/users/{id}/unfollow")
+    public ResponseEntity<?> unfollowUser(@PathVariable("id") String id) {
+        try {
+            userService.unfollowUser(id);
+            return new ResponseEntity<>("User was unfollowed successfully!", HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 }

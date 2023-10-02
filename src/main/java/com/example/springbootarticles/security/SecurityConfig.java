@@ -42,11 +42,13 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestMatcher apiMatcher = new AntPathRequestMatcher("/api/**");
+        RequestMatcher swaggerMatcher = new AntPathRequestMatcher("/swagger-ui/**");
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(apiMatcher).authenticated()
-                        .anyRequest().authenticated()
+                            .requestMatchers(swaggerMatcher).permitAll()
+                            .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.loginPage("/auth/login").permitAll())
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))

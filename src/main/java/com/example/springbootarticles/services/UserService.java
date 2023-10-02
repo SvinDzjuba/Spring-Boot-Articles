@@ -4,15 +4,19 @@ import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.ArticleResponse;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.RouteMatcher;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.swing.*;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -26,8 +30,8 @@ public class UserService {
     @Autowired
     private ArticleService articleService;
 
+    private final Logger logger = LoggerFactory.getLogger(OncePerRequestFilter.class);
     private Date newMonthDate;
-    private Date newYearDate;
 
     public void updateUserHandler(String id, User user) throws NotFoundException {
         Optional<User> userData = userRepo.findById(id);
@@ -72,9 +76,15 @@ public class UserService {
         if (user.getSubscription().getResets_at().before(now)) {
             // Subscription is need to be reset
             String currentPlan = user.getSubscription().getPlan();
-            String[] planMonth = currentPlan.split(" ");
+            String[] planMonthArr = currentPlan.split(" ");
+            String plan;
+            if (planMonthArr.length == 1) {
+                plan = planMonthArr[0];
+            } else {
+                plan = planMonthArr[1];
+            }
             newMonthDate = addMonthToCurrentDate();
-            switch (planMonth[1]) {
+            switch (plan) {
                 case "Free":
                     user.getSubscription().setRemains(5);
                     user.getSubscription().setExpires_at(newMonthDate);
@@ -91,7 +101,7 @@ public class UserService {
                         downgradeUserSubscriptionToFree(user);
                     } else {
                         // Silver/Gold Year is active - renew the reset date
-                        if (planMonth[0].equals("Silver")) {
+                        if (planMonthArr[0].equals("Silver")) {
                             // Silver Year
                             user.getSubscription().setRemains(10);
                         } else {
@@ -106,6 +116,72 @@ public class UserService {
         }
     }
 
+    public void followToUser(String id) {
+        // Get the user to follow
+        Optional<User> userToFollowOptional = userRepo.findById(id);
+        if (!userToFollowOptional.isPresent()) {
+            throw new NotFoundException("User not found!");
+        }
+        User userToFollow = userToFollowOptional.get();
+
+        // Get the currently authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        User currentUser = userRepo.findByUsername(currentUsername);
+
+        String[] userFollowing = currentUser.getFollowing();
+        String[] userFollowers = userToFollow.getFollowers();
+
+        int initialFollowingLength = userFollowing.length;
+        int initialFollowersLength = userFollowers.length;
+        String[] following = Arrays.copyOf(userFollowing, initialFollowingLength + 1);
+        String[] followers = Arrays.copyOf(userFollowers, initialFollowersLength + 1);
+        following[initialFollowingLength] = userToFollow.getId();
+        followers[initialFollowersLength] = currentUser.getId();
+
+        currentUser.setFollowing(following);
+        userToFollow.setFollowers(followers);
+
+        // Save the updated current user and user to follow
+        userRepo.save(currentUser);
+        userRepo.save(userToFollow);
+    }
+
+    public void unfollowUser(String id) {
+        // Get the user to unfollow
+        Optional<User> userToUnfollowOptional = userRepo.findById(id);
+        if (!userToUnfollowOptional.isPresent()) {
+            throw new NotFoundException("User not found!");
+        }
+        User userToUnfollow = userToUnfollowOptional.get();
+
+        // Get the currently authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        User currentUser = userRepo.findByUsername(currentUsername);
+
+        String[] userFollowing = currentUser.getFollowing();
+        String[] userFollowers = userToUnfollow.getFollowers();
+        List<String> followersList = new ArrayList<>(Arrays.asList(userFollowers));
+        List<String> followingList = new ArrayList<>(Arrays.asList(userFollowing));
+        followingList.remove(userToUnfollow.getId());
+        followersList.remove(currentUser.getId());
+        String[] followers = followersList.toArray(new String[0]);
+        String[] following = followingList.toArray(new String[0]);
+        currentUser.setFollowing(following);
+        userToUnfollow.setFollowers(followers);
+
+        // Save the updated current user and user to follow
+        userRepo.save(currentUser);
+        userRepo.save(userToUnfollow);
+    }
+
+    public boolean checkUserDuplicate(String username, String email) {
+        User user = userRepo.findByUsername(username);
+        User userByEmail = userRepo.findByEmail(email);
+        return user != null || userByEmail != null;
+    }
+
     public void downgradeUserSubscriptionToFree(User user) {
         user.getSubscription().setPlan("Free");
         user.getSubscription().setRemains(5);
@@ -117,7 +193,7 @@ public class UserService {
 
     public void upgradeUserSubscription(String plan, User user) {
         user.getSubscription().setPlan(plan);
-        newYearDate = addYearToCurrentDate();
+        Date newYearDate = addYearToCurrentDate();
         newMonthDate = addMonthToCurrentDate();
         switch (plan) {
             case "Silver Month":

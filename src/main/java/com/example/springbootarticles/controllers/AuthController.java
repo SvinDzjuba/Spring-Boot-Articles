@@ -1,8 +1,10 @@
 package com.example.springbootarticles.controllers;
 
-
-import com.example.springbootarticles.models.JwtRequest;
 import com.example.springbootarticles.models.JwtResponse;
+import com.example.springbootarticles.models.RegistrationRequest;
+import com.example.springbootarticles.models.Subscription;
+import com.example.springbootarticles.models.User;
+import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.JwtHelper;
 import com.example.springbootarticles.services.UserService;
 import org.slf4j.Logger;
@@ -20,6 +22,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 @RestController
 @RequestMapping(value = "/auth", method = RequestMethod.GET)
 public class AuthController {
@@ -29,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepo;
 
     @Autowired
     private AuthenticationManager manager;
@@ -41,19 +48,55 @@ public class AuthController {
 
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
+    @GetMapping("/login")
+    public ResponseEntity<JwtResponse> login(@RequestParam String username, @RequestParam String password) {
 
-        this.doAuthenticate(request.getUsername(), request.getPassword());
+        this.doAuthenticate(username, password);
         runConfigureCustom();
 
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
         String token = this.helper.generateToken(userDetails);
 
         JwtResponse response = JwtResponse.builder()
                 .jwtToken(token)
                 .username(userDetails.getUsername()).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody RegistrationRequest registrationUser) {
+        try {
+            if (userService.checkUserDuplicate(registrationUser.getUsername(), registrationUser.getEmail())) {
+                logger.warn("User with username {} or email {} already exists",
+                        registrationUser.getUsername(), registrationUser.getEmail());
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            Subscription subscription = new Subscription(
+                    5,
+                    userService.addMonthToCurrentDate(),
+                    userService.addMonthToCurrentDate(),
+                    "Free"
+            );
+            User user = new User(
+                    null,
+                    registrationUser.getName(),
+                    registrationUser.getUsername(),
+                    "user",
+                    registrationUser.getEmail(),
+                    passwordEncoder().encode(registrationUser.getPassword()),
+                    new Date(),
+                    new Date(),
+                    new String[]{},
+                    new String[]{},
+                    subscription
+
+            );
+            userRepo.save(user);
+            return new ResponseEntity<>(user, HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.warn("Exception occurred while registering user : {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     public void runConfigureCustom() {

@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +34,9 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
+    @Autowired
+    private UserRepository userRepo;
+
     /* CRUD for articles */
     @GetMapping("/articles")
     public List<ArticleResponse> getArticles(){
@@ -48,13 +49,20 @@ public class ArticleController {
     }
 
     @PostMapping("/articles")
-    public String saveArticle(@RequestBody Article article){
+    public String saveArticle(@RequestBody Article article) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepo.findByUsername(authentication.getName());
+        article.setAuthor_id(user.getId());
+        article.setId(null);
         articleRepo.save(article);
         return "Added article with title: " + article.getTitle();
     }
 
     @PutMapping("/articles/{id}")
-    public ResponseEntity<?> updateArticle(@PathVariable("id") String id, @RequestBody Article article) {
+    public ResponseEntity<?> updateArticle(
+            @PathVariable("id") String id,
+            @RequestBody Article article
+    ) {
         try {
             articleService.updateArticleHandler(id, article);
             return new ResponseEntity<>("Article was updated successfully!", HttpStatus.OK);
