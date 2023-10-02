@@ -42,15 +42,20 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestMatcher apiMatcher = new AntPathRequestMatcher("/api/**");
-        RequestMatcher swaggerMatcher = new AntPathRequestMatcher("/swagger-ui/**");
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(apiMatcher).authenticated()
-                            .requestMatchers(swaggerMatcher).permitAll()
-                            .anyRequest().authenticated()
+                                .antMatchers("/configuration/ui",
+                                        "/swagger-resources",
+                                        "/swagger-ui.html").permitAll()
                 )
                 .formLogin(form -> form.loginPage("/auth/login").permitAll())
+                .logout(logout -> logout.logoutUrl("/auth/logout")
+                        .clearAuthentication(true)
+                        .invalidateHttpSession(true)
+                        .logoutSuccessUrl("/auth/login")
+                        .permitAll())
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);

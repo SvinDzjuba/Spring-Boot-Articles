@@ -11,6 +11,7 @@ import java.util.Date;
 @Builder
 @ToString
 public class ArticleResponse {
+    private String id;
     private String title;
     private String demo;
     private String content;

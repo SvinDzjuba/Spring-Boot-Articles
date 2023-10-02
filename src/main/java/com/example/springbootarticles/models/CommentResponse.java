@@ -11,6 +11,7 @@ import java.util.Date;
 @Builder
 @ToString
 public class CommentResponse {
+    private String id;
     private String content;
     private Date created_at;
     private Date updated_at;

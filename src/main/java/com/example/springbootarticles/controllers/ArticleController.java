@@ -1,9 +1,7 @@
 package com.example.springbootarticles.controllers;
 
 import com.example.springbootarticles.exceptions.NotFoundException;
-import com.example.springbootarticles.models.Article;
-import com.example.springbootarticles.models.ArticleResponse;
-import com.example.springbootarticles.models.User;
+import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.ArticleRepository;
 import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.ArticleService;
@@ -39,8 +37,13 @@ public class ArticleController {
 
     /* CRUD for articles */
     @GetMapping("/articles")
-    public List<ArticleResponse> getArticles(){
-        List<Article> articles = articleRepo.findAll();
+    public List<ArticleResponse> getArticles(@RequestParam(required = false) String tag) {
+        List<Article> articles;
+        if (tag == null) {
+            articles = articleRepo.findAll();
+        } else {
+            articles = articleRepo.findByTagListContaining(tag);
+        }
         List<ArticleResponse> articlesList = new ArrayList<>();
         for (Article article : articles) {
             articlesList.add(articleService.getArticleWithDetails(article.getId(), "DEMO"));
@@ -89,6 +92,27 @@ public class ArticleController {
             return userService.checkUserSubscriptionAvailability(authentication, id);
         } else {
             throw new NotFoundException("Article not found!");
+        }
+    }
+
+    @GetMapping("/articles/{id}/comments")
+    public ResponseEntity<?> getArticleComments(@PathVariable String id) {
+        try {
+            List<CommentResponse> comments = articleService.getArticleComments(id);
+            return new ResponseEntity<>(comments, HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/articles/{id}/like")
+    public ResponseEntity<?> likeArticle(@PathVariable String id, @RequestParam boolean like) {
+        try {
+            articleService.likeArticle(id, like);
+            String message = "Article was " + (like ? "liked" : "unliked") + " successfully!";
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }

@@ -1,8 +1,7 @@
 package com.example.springbootarticles.services;
 
 import com.example.springbootarticles.exceptions.NotFoundException;
-import com.example.springbootarticles.models.ArticleResponse;
-import com.example.springbootarticles.models.User;
+import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.RouteMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.swing.*;
 import java.text.ParseException;
 import java.util.*;
 
@@ -30,7 +27,6 @@ public class UserService {
     @Autowired
     private ArticleService articleService;
 
-    private final Logger logger = LoggerFactory.getLogger(OncePerRequestFilter.class);
     private Date newMonthDate;
 
     public void updateUserHandler(String id, User user) throws NotFoundException {
@@ -116,13 +112,46 @@ public class UserService {
         }
     }
 
-    public void followToUser(String id) {
+    public Follower showFollowers() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userRepo.findByUsername(username);
+        String[] followers = user.getFollowers();
+        List<String> followersList = new ArrayList<>();
+        for (String followerId : followers) {
+            User follower = userRepo.findById(followerId).orElse(null);
+            String followerName = follower != null ? follower.getName() : "Unknown User";
+            followersList.add(followerName);
+        }
+        return new Follower(
+                followersList.size(),
+                followersList.toArray(new String[0])
+        );
+    }
+
+    public Following showFollowing() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userRepo.findByUsername(username);
+        String[] following = user.getFollowing();
+        List<String> followingList = new ArrayList<>();
+        for (String followingId : following) {
+            User followingUser = userRepo.findById(followingId).orElse(null);
+            String followingName = followingUser != null ? followingUser.getName() : "Unknown User";
+            followingList.add(followingName);
+        }
+        return new Following(
+                followingList.size(),
+                followingList.toArray(new String[0])
+        );
+    }
+
+    public void followToUser(String username) {
         // Get the user to follow
-        Optional<User> userToFollowOptional = userRepo.findById(id);
-        if (!userToFollowOptional.isPresent()) {
+        User userToFollow = userRepo.findByUsername(username);
+        if (userToFollow == null) {
             throw new NotFoundException("User not found!");
         }
-        User userToFollow = userToFollowOptional.get();
 
         // Get the currently authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -147,13 +176,12 @@ public class UserService {
         userRepo.save(userToFollow);
     }
 
-    public void unfollowUser(String id) {
+    public void unfollowUser(String username) {
         // Get the user to unfollow
-        Optional<User> userToUnfollowOptional = userRepo.findById(id);
-        if (!userToUnfollowOptional.isPresent()) {
+        User userToUnfollow = userRepo.findByUsername(username);
+        if (userToUnfollow == null) {
             throw new NotFoundException("User not found!");
         }
-        User userToUnfollow = userToUnfollowOptional.get();
 
         // Get the currently authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -174,6 +202,24 @@ public class UserService {
         // Save the updated current user and user to follow
         userRepo.save(currentUser);
         userRepo.save(userToUnfollow);
+    }
+
+    public Profile showUserProfile(String username) {
+        User user = userRepo.findByUsername(username);
+        if (user == null) {
+            throw new NotFoundException("User not found!");
+        }
+        // Check if authorized user is following the user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        User currentUser = userRepo.findByUsername(currentUsername);
+        String[] following = currentUser.getFollowing();
+        boolean isFollowing = Arrays.asList(following).contains(user.getId());
+        return new Profile(
+                user.getName(),
+                user.getUsername(),
+                isFollowing
+        );
     }
 
     public boolean checkUserDuplicate(String username, String email) {

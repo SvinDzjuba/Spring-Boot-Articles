@@ -9,12 +9,9 @@ import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.context.SecurityContext;
-
-import java.util.Arrays;
 
 @Configuration
-public class SpringDocOpenApuConfig {
+public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "Access Token";
@@ -23,7 +20,10 @@ public class SpringDocOpenApuConfig {
                 .components(new Components().addSecuritySchemes(securitySchemeName, new SecurityScheme()
                         .type(SecurityScheme.Type.APIKEY)
                         .in(SecurityScheme.In.HEADER)
-                        .name(HttpHeaders.AUTHORIZATION)))
+                        .name(HttpHeaders.AUTHORIZATION)
+                        .bearerFormat("JWT")
+                        .scheme("bearer")
+                ))
                 .info(apiInfo());
     }
 
@@ -45,7 +45,7 @@ public class SpringDocOpenApuConfig {
     // Describe the apis
     private Info apiInfo() {
         return new Info()
-                .title("Title")
+                .title("Articles Application")
                 .description("API Description.");
     }
 }

@@ -1,17 +1,14 @@
 package com.example.springbootarticles.services;
 
 import com.example.springbootarticles.exceptions.NotFoundException;
-import com.example.springbootarticles.models.Article;
-import com.example.springbootarticles.models.ArticleResponse;
-import com.example.springbootarticles.models.User;
+import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.ArticleRepository;
+import com.example.springbootarticles.repositories.CommentRepository;
 import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ArticleService {
@@ -20,6 +17,12 @@ public class ArticleService {
 
     @Autowired
     private UserRepository userRepo;
+
+    @Autowired
+    private CommentRepository commentRepo;
+
+    @Autowired
+    private CommentService commentService;
 
     public ArticleResponse getArticleWithDetails(String id, String type) {
         Article article = articleRepo.findById(id)
@@ -35,6 +38,7 @@ public class ArticleService {
         } else {
             response.setContent(article.getContent());
         }
+        response.setId(article.getId());
         response.setDemo(article.getDemo());
         response.setCreated_at(article.getCreated_at());
         response.setUpdated_at(article.getUpdated_at());
@@ -70,9 +74,28 @@ public class ArticleService {
             if (like) {
                 articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() + 1);
             } else {
+                if (articleToUpdate.getFavoriteCount() == 0) {
+                    throw new RuntimeException("Article has no likes!");
+                }
                 articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() - 1);
             }
             articleRepo.save(articleToUpdate);
+        } else {
+            throw new NotFoundException("Article not found!");
+        }
+    }
+
+    public List<CommentResponse> getArticleComments(String id) {
+        Optional<Article> articleData = articleRepo.findById(id);
+        if (articleData.isPresent()){
+            List<Comment> allComments = commentRepo.findAll();
+            List<CommentResponse> comments = new ArrayList<>();
+            for (Comment comment : allComments) {
+                if (Objects.equals(comment.getArticle_id(), id)) {
+                    comments.add(commentService.getCommentWithDetails(comment.getId()));
+                }
+            }
+            return comments;
         } else {
             throw new NotFoundException("Article not found!");
         }

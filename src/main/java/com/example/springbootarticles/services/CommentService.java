@@ -36,6 +36,7 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("User not found!"));
 
         CommentResponse commentResponse = new CommentResponse();
+        commentResponse.setId(comment.getId());
         commentResponse.setContent(comment.getContent());
         commentResponse.setCreated_at(comment.getCreated_at());
         commentResponse.setUpdated_at(comment.getUpdated_at());
