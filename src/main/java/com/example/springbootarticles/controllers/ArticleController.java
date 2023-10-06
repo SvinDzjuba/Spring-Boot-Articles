@@ -7,6 +7,7 @@ import com.example.springbootarticles.services.ArticleService;
 import com.example.springbootarticles.services.CustomService;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,26 +59,18 @@ public class ArticleController {
 
     @PostMapping("/")
     @Operation(summary = "Create Article")
-    public String saveArticle(@RequestBody ArticleRequest article) {
-        User currentUser = customService.getAuthenticatedUser();
-        Article newArticle = new Article(
-                null,
-                article.getTitle(),
-                article.getDemo(),
-                article.getContent(),
-                new Date(),
-                new Date(),
-                currentUser.getId(),
-                0,
-                article.getTagList()
-        );
-        articleRepo.save(newArticle);
-        return "Added article with title: " + article.getTitle();
+    public ResponseEntity<?> saveArticle(@RequestBody ArticleRequest article) {
+        try {
+            articleService.createArticleHandler(article);
+            return new ResponseEntity<>("Article was created successfully!", HttpStatus.CREATED);
+        } catch (ConstraintViolationException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        }
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update Article")
-    public ResponseEntity<?> updateArticle(@PathVariable("id") String id, @RequestBody Article article) {
+    public ResponseEntity<?> updateArticle(@PathVariable("id") String id, @RequestBody ArticleRequest article) {
         try {
             articleService.updateArticleHandler(id, article);
             return new ResponseEntity<>("Article was updated successfully!", HttpStatus.OK);

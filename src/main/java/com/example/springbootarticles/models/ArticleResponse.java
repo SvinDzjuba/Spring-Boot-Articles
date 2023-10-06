@@ -13,6 +13,7 @@ import java.util.Date;
 public class ArticleResponse {
     private String id;
     private String title;
+    private String slug;
     private String demo;
     private String content;
     private Author author;

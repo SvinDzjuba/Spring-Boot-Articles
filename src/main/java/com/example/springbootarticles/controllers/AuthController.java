@@ -1,14 +1,12 @@
 package com.example.springbootarticles.controllers;
 
-import com.example.springbootarticles.models.JwtResponse;
-import com.example.springbootarticles.models.UserRequest;
-import com.example.springbootarticles.models.Subscription;
-import com.example.springbootarticles.models.User;
+import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.CustomService;
 import com.example.springbootarticles.services.JwtHelper;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -30,6 +28,7 @@ import java.util.Date;
 
 @RestController
 @RequestMapping("api")
+@Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
 
     @Autowired
@@ -58,12 +57,12 @@ public class AuthController {
     @PostMapping("/users/login")
     @Operation(summary = "Authentication")
     @SecurityRequirements
-    public ResponseEntity<JwtResponse> login(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
 
-        this.doAuthenticate(username, password);
+        this.doAuthenticate(request.getUsername(), request.getPassword());
         runConfigureCustom();
 
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
         String token = this.helper.generateToken(userDetails);
 
         JwtResponse response = JwtResponse.builder()

@@ -3,7 +3,6 @@ package com.example.springbootarticles.services;
 import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.ArticleRepository;
-import com.example.springbootarticles.repositories.CommentRepository;
 import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,20 +55,35 @@ public class ArticleService {
         return response;
     }
 
-    public void updateArticleHandler(String id, Article article) throws NotFoundException {
+    public void createArticleHandler(ArticleRequest article) {
+        User currentUser = customService.getAuthenticatedUser();
+        Article newArticle = new Article();
+        newArticle.setTitle(article.getTitle());
+        newArticle.setSlug(customService.slugify(article.getTitle()));
+        newArticle.setContent(article.getContent());
+        newArticle.setDemo(article.getDemo());
+        newArticle.setCreated_at(new Date());
+        newArticle.setUpdated_at(new Date());
+        newArticle.setAuthor_id(currentUser.getId());
+        newArticle.setFavoriteCount(0);
+        newArticle.setTagList(article.getTagList());
+        articleRepo.save(newArticle);
+    }
+
+    public void updateArticleHandler(String id, ArticleRequest article) throws NotFoundException {
         Optional<Article> articleData = articleRepo.findById(id);
         if (articleData.isPresent()) {
             Article articleToUpdate = articleData.get();
-            User author = userRepo.findById(articleToUpdate.getAuthor_id())
-                    .orElseThrow(() -> new NotFoundException("Author of article not found!"));
-            articleToUpdate.setTitle(article.getTitle() == null ? articleToUpdate.getTitle() : article.getTitle());
-            articleToUpdate.setDemo(article.getDemo() == null ? articleToUpdate.getDemo() : article.getDemo());
-            articleToUpdate.setContent(article.getContent() == null ? articleToUpdate.getContent() : article.getContent());
-            articleToUpdate.setAuthor_id(author.getId() == null ? articleToUpdate.getAuthor_id() : author.getId());
-            articleToUpdate.setUpdated_at(new Date());
-            articleToUpdate.setFavoriteCount(article.getFavoriteCount() == 0 ? articleToUpdate.getFavoriteCount() : article.getFavoriteCount());
-            articleToUpdate.setTagList(article.getTagList().length == 0 ? articleToUpdate.getTagList() : article.getTagList());
-            articleRepo.save(articleToUpdate);
+            User currentUser = customService.getAuthenticatedUser();
+            if (Objects.equals(articleData.get().getAuthor_id(), currentUser.getId())) {
+                articleToUpdate.setTitle(article.getTitle() == null ? articleToUpdate.getTitle() : article.getTitle());
+                articleToUpdate.setSlug(customService.slugify(article.getTitle() == null ? articleToUpdate.getTitle() : article.getTitle()));
+                articleToUpdate.setDemo(article.getDemo() == null ? articleToUpdate.getDemo() : article.getDemo());
+                articleToUpdate.setContent(article.getContent() == null ? articleToUpdate.getContent() : article.getContent());
+                articleToUpdate.setUpdated_at(new Date());
+                articleToUpdate.setTagList(article.getTagList().length == 0 ? articleToUpdate.getTagList() : article.getTagList());
+                articleRepo.save(articleToUpdate);
+            }
         } else {
             throw new NotFoundException("Article not found!");
         }

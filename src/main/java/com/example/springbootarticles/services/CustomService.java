@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.util.*;
 
 @Service
@@ -14,6 +15,8 @@ public class CustomService {
 
     @Autowired
     private UserRepository userRepo;
+
+    private static final int MAX_SLUG_LENGTH = 256;
 
     public User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -39,5 +42,16 @@ public class CustomService {
             arrayList.remove(string);
         }
         return arrayList.toArray(new String[0]);
+    }
+
+    public String slugify(String s) {
+        final String intermediateResult = Normalizer
+                .normalize(s, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "")
+                .replaceAll("[^-_a-zA-Z0-9]", "-").replaceAll("\\s+", "-")
+                .replaceAll("[-]+", "-").replaceAll("^-", "")
+                .replaceAll("-$", "").toLowerCase();
+        return intermediateResult.substring(0,
+                Math.min(MAX_SLUG_LENGTH, intermediateResult.length()));
     }
 }

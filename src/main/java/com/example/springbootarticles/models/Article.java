@@ -21,6 +21,8 @@ public class Article {
     @NotBlank
     private String title;
     @NotBlank
+    private String slug;
+    @NotBlank
     private String demo;
     @NotBlank
     private String content;

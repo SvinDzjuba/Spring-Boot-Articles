@@ -42,17 +42,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestMatcher apiMatcher = new AntPathRequestMatcher("/api/**");
         http.csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .antMatchers(AUTH_WHITE_LIST).permitAll()
-                        .requestMatchers(apiMatcher).authenticated()
-                )
                 .formLogin(form -> form.loginPage("/api/users").permitAll())
                 .logout(logout -> logout.logoutUrl("/api/logout")
                         .clearAuthentication(true)
                         .invalidateHttpSession(true)
                         .logoutSuccessUrl("/api/users/login")
                         .permitAll())
+                .cors(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .antMatchers(AUTH_WHITE_LIST).permitAll()
+                        .requestMatchers(apiMatcher).authenticated()
+                )
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
