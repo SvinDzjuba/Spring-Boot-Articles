@@ -8,7 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @ToString
-public class Follower {
-    private int amount;
-    private String[] name;
+public class Author {
+    private String name;
+    private String username;
+    private String bio;
 }

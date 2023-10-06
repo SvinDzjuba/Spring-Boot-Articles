@@ -3,24 +3,27 @@ package com.example.springbootarticles.controllers;
 import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.ArticleRepository;
-import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.ArticleService;
+import com.example.springbootarticles.services.CustomService;
 import com.example.springbootarticles.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.PermitAll;
 import javax.validation.ConstraintViolationException;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/articles")
+@Tag(name = "Articles", description = "Articles API")
 public class ArticleController {
 
     @Autowired
@@ -33,10 +36,12 @@ public class ArticleController {
     private ArticleService articleService;
 
     @Autowired
-    private UserRepository userRepo;
+    private CustomService customService;
 
     /* CRUD for articles */
-    @GetMapping("/articles")
+    @GetMapping("/")
+    @Operation(summary = "List Articles")
+    @SecurityRequirements
     public List<ArticleResponse> getArticles(@RequestParam(required = false) String tag) {
         List<Article> articles;
         if (tag == null) {
@@ -51,21 +56,28 @@ public class ArticleController {
         return articlesList;
     }
 
-    @PostMapping("/articles")
-    public String saveArticle(@RequestBody Article article) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepo.findByUsername(authentication.getName());
-        article.setAuthor_id(user.getId());
-        article.setId(null);
-        articleRepo.save(article);
+    @PostMapping("/")
+    @Operation(summary = "Create Article")
+    public String saveArticle(@RequestBody ArticleRequest article) {
+        User currentUser = customService.getAuthenticatedUser();
+        Article newArticle = new Article(
+                null,
+                article.getTitle(),
+                article.getDemo(),
+                article.getContent(),
+                new Date(),
+                new Date(),
+                currentUser.getId(),
+                0,
+                article.getTagList()
+        );
+        articleRepo.save(newArticle);
         return "Added article with title: " + article.getTitle();
     }
 
-    @PutMapping("/articles/{id}")
-    public ResponseEntity<?> updateArticle(
-            @PathVariable("id") String id,
-            @RequestBody Article article
-    ) {
+    @PutMapping("/{id}")
+    @Operation(summary = "Update Article")
+    public ResponseEntity<?> updateArticle(@PathVariable("id") String id, @RequestBody Article article) {
         try {
             articleService.updateArticleHandler(id, article);
             return new ResponseEntity<>("Article was updated successfully!", HttpStatus.OK);
@@ -76,40 +88,46 @@ public class ArticleController {
         }
     }
 
-    @DeleteMapping("/articles/{id}")
-    public String deleteArticle(@PathVariable String id){
-        articleRepo.deleteById(id);
-        return "Article with id: {" + id + "} was deleted successfully!";
-    }
-
-    /* Read particular article */
-    @GetMapping("/articles/{id}")
-    public ArticleResponse showArticle(@PathVariable String id) throws ParseException, RuntimeException {
-        Optional<Article> article = articleRepo.findById(id);
-        // Get authorized user
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (article.isPresent()) {
-            return userService.checkUserSubscriptionAvailability(authentication, id);
-        } else {
-            throw new NotFoundException("Article not found!");
-        }
-    }
-
-    @GetMapping("/articles/{id}/comments")
-    public ResponseEntity<?> getArticleComments(@PathVariable String id) {
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete Article")
+    public ResponseEntity<?> deleteArticle(@PathVariable String id) {
         try {
-            List<CommentResponse> comments = articleService.getArticleComments(id);
-            return new ResponseEntity<>(comments, HttpStatus.OK);
+            articleService.deleteArticleHandler(id);
+            return new ResponseEntity<>("Article was deleted successfully!", HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("/articles/{id}/like")
-    public ResponseEntity<?> likeArticle(@PathVariable String id, @RequestParam boolean like) {
+    @GetMapping("/{id}")
+    @Operation(summary = "Get Article")
+    public ArticleResponse showArticle(@PathVariable String id) throws RuntimeException {
+        Optional<Article> article = articleRepo.findById(id);
+        if (article.isPresent()) {
+            return userService.checkUserSubscriptionAvailability(id);
+        } else {
+            throw new NotFoundException("Article not found!");
+        }
+    }
+
+    @PostMapping("/articles/{id}/favorite")
+    @Operation(summary = "Favorite Article")
+    public ResponseEntity<?> addArticleToFavorite(@PathVariable String id) {
         try {
-            articleService.likeArticle(id, like);
-            String message = "Article was " + (like ? "liked" : "unliked") + " successfully!";
+            articleService.likeArticle(id, true);
+            String message = "Article was add to favorites successfully!";
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/articles/{id}/favorite")
+    @Operation(summary = "Unfavorite Article")
+    public ResponseEntity<?> removeArticleFromFavorites(@PathVariable String id) {
+        try {
+            articleService.likeArticle(id, false);
+            String message = "Article was removed from favorites successfully!";
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

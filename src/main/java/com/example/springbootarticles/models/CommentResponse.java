@@ -15,6 +15,6 @@ public class CommentResponse {
     private String content;
     private Date created_at;
     private Date updated_at;
-    private User author;
-    private Article article;
+    private Author author;
+    private String articleTitle;
 }

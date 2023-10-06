@@ -5,14 +5,10 @@ import com.example.springbootarticles.services.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -20,7 +16,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig  {
+public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationEntryPoint point;
@@ -28,33 +24,34 @@ public class SecurityConfig  {
     @Autowired
     private JwtAuthenticationFilter filter;
 
-    @Autowired
-    private UserDetailsService customUserDetailsService;
+    private static final String[] AUTH_WHITE_LIST = {
+            // API routes
+            "/api/profiles/{username}",
+            "/api/articles",
+            "/api/articles/{slug}",
+            "/api/articles/{slug}/comments",
+            "/api/tags",
 
-    public void configureCustom(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder());
-    }
-
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+            // Swagger UI
+            "/v3/api-docs",
+            "/swagger-ui.html",
+            "/swagger-ui/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestMatcher apiMatcher = new AntPathRequestMatcher("/api/**");
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(apiMatcher).authenticated()
-                                .antMatchers("/configuration/ui",
-                                        "/swagger-resources",
-                                        "/swagger-ui.html").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .antMatchers(AUTH_WHITE_LIST).permitAll()
+                        .requestMatchers(apiMatcher).authenticated()
                 )
-                .formLogin(form -> form.loginPage("/auth/login").permitAll())
-                .logout(logout -> logout.logoutUrl("/auth/logout")
+                .formLogin(form -> form.loginPage("/api/users").permitAll())
+                .logout(logout -> logout.logoutUrl("/api/logout")
                         .clearAuthentication(true)
                         .invalidateHttpSession(true)
-                        .logoutSuccessUrl("/auth/login")
+                        .logoutSuccessUrl("/api/users/login")
                         .permitAll())
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

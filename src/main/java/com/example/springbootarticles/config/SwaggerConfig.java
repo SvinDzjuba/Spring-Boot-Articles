@@ -2,6 +2,7 @@ package com.example.springbootarticles.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -12,40 +13,42 @@ import org.springframework.http.HttpHeaders;
 
 @Configuration
 public class SwaggerConfig {
+    private static final String SCHEME_NAME = "Access Token";
+    private static final String SCHEME = "bearer";
+
     @Bean
     public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "Access Token";
         return new OpenAPI()
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
-                .components(new Components().addSecuritySchemes(securitySchemeName, new SecurityScheme()
-                        .type(SecurityScheme.Type.APIKEY)
-                        .in(SecurityScheme.In.HEADER)
-                        .name(HttpHeaders.AUTHORIZATION)
-                        .bearerFormat("JWT")
-                        .scheme("bearer")
-                ))
-                .info(apiInfo());
+                .info(apiInfo())
+                .components(new Components()
+                        .addSecuritySchemes(SCHEME_NAME, createSecurityScheme()))
+                .addSecurityItem(new SecurityRequirement().addList(SCHEME_NAME));
+    }
+
+    private SecurityScheme createSecurityScheme() {
+        return new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name(HttpHeaders.AUTHORIZATION)
+                .bearerFormat("JWT")
+                .scheme(SCHEME);
     }
 
     @Bean
     public GroupedOpenApi api() {
         return GroupedOpenApi.builder()
-                .group("api")
+                .group("API")
                 .pathsToMatch("/api/**")
                 .build();
     }
-    @Bean
-    public GroupedOpenApi auth() {
-        return GroupedOpenApi.builder()
-                .group("auth")
-                .pathsToMatch("/auth/**")
-                .build();
-    }
 
-    // Describe the apis
+    // Describe the API
     private Info apiInfo() {
         return new Info()
-                .title("Articles Application")
-                .description("API Description.");
+                .title("Articles API")
+                .description("Simple Articles Application")
+                .contact(new Contact()
+                        .email("maksim.dzjubenko@ivkhk.ee")
+                        .name("Maksim Dzjubenko"));
     }
 }

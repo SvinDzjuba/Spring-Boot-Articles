@@ -15,7 +15,7 @@ public class ArticleResponse {
     private String title;
     private String demo;
     private String content;
-    private User author;
+    private Author author;
     private Date created_at;
     private Date updated_at;
     private int favoriteCount;

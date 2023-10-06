@@ -19,18 +19,26 @@ public class ArticleService {
     private UserRepository userRepo;
 
     @Autowired
-    private CommentRepository commentRepo;
-
-    @Autowired
-    private CommentService commentService;
+    private CustomService customService;
 
     public ArticleResponse getArticleWithDetails(String id, String type) {
         Article article = articleRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Article not found!"));
 
-        User author = userRepo.findById(article.getAuthor_id())
+        User user = userRepo.findById(article.getAuthor_id())
                 .orElseThrow(() -> new NotFoundException("Author of article not found!"));
 
+        // Convert User to Author
+        Author author = Author.builder()
+                .name(user.getName())
+                .username(user.getUsername())
+                .bio(user.getBio())
+                .build();
+
+        return getArticleResponse(type, article, author);
+    }
+
+    private static ArticleResponse getArticleResponse(String type, Article article, Author author) {
         ArticleResponse response = new ArticleResponse();
         response.setTitle(article.getTitle());
         if (Objects.equals(type, "DEMO")) {
@@ -45,12 +53,12 @@ public class ArticleService {
         response.setAuthor(author);
         response.setFavoriteCount(article.getFavoriteCount());
         response.setTagList(article.getTagList());
-
         return response;
     }
+
     public void updateArticleHandler(String id, Article article) throws NotFoundException {
         Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()){
+        if (articleData.isPresent()) {
             Article articleToUpdate = articleData.get();
             User author = userRepo.findById(articleToUpdate.getAuthor_id())
                     .orElseThrow(() -> new NotFoundException("Author of article not found!"));
@@ -67,37 +75,65 @@ public class ArticleService {
         }
     }
 
+    public void deleteArticleHandler(String id) {
+        User currentUser = customService.getAuthenticatedUser();
+        Optional<Article> articleData = articleRepo.findById(id);
+        if (articleData.isPresent()) {
+            Article articleToDelete = articleData.get();
+            if (Objects.equals(articleToDelete.getAuthor_id(), currentUser.getId())) {
+                articleRepo.deleteById(id);
+            } else {
+                throw new SecurityException("You are not the author of this article!");
+            }
+        } else {
+            throw new NotFoundException("Article not found!");
+        }
+    }
+
     public void likeArticle(String id, boolean like) {
         Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()){
+        if (articleData.isPresent()) {
             Article articleToUpdate = articleData.get();
+            User currentUser = customService.getAuthenticatedUser();
+            List<User> checkArticleDuplicate = userRepo.findByFavoriteArticlesContaining(id);
+            String[] userFavoriteArticles = new String[0];
             if (like) {
-                articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() + 1);
-            } else {
-                if (articleToUpdate.getFavoriteCount() == 0) {
-                    throw new RuntimeException("Article has no likes!");
+                if (checkArticleDuplicate.isEmpty()) {
+                    articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() + 1);
+                    userFavoriteArticles = customService.addOrRemoveStringFromArray(currentUser.getFavoriteArticles(), id, "add");
                 }
-                articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() - 1);
+            } else {
+                if (!checkArticleDuplicate.isEmpty()) {
+                    articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() - 1);
+                    userFavoriteArticles = customService.addOrRemoveStringFromArray(currentUser.getFavoriteArticles(), id, "remove");
+                }
             }
+            currentUser.setFavoriteArticles(userFavoriteArticles);
+            userRepo.save(currentUser);
             articleRepo.save(articleToUpdate);
         } else {
             throw new NotFoundException("Article not found!");
         }
     }
 
-    public List<CommentResponse> getArticleComments(String id) {
-        Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()){
-            List<Comment> allComments = commentRepo.findAll();
-            List<CommentResponse> comments = new ArrayList<>();
-            for (Comment comment : allComments) {
-                if (Objects.equals(comment.getArticle_id(), id)) {
-                    comments.add(commentService.getCommentWithDetails(comment.getId()));
-                }
-            }
-            return comments;
-        } else {
-            throw new NotFoundException("Article not found!");
+    public String[] getTagsList() {
+        List<Article> allArticles = articleRepo.findAll();
+        List<String> tags = new ArrayList<>();
+        for (Article article : allArticles) {
+            tags.addAll(Arrays.asList(article.getTagList()));
         }
+        Set<String> uniqueTags = new HashSet<>(tags);
+        return uniqueTags.toArray(new String[0]);
+    }
+
+    public List<Article> getArticlesByAuthorId(String id) {
+        List<Article> articles = articleRepo.findAll();
+        List<Article> articlesByAuthor = new ArrayList<>();
+        for (Article article : articles) {
+            if (Objects.equals(article.getAuthor_id(), id)) {
+                articlesByAuthor.add(article);
+            }
+        }
+        return articlesByAuthor;
     }
 }

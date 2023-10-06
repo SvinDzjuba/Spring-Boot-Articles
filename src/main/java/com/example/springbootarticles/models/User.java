@@ -19,7 +19,7 @@ public class User {
     private String name;
     @Indexed(unique = true)
     private String username;
-    private String role;
+    private String bio;
     @Indexed(unique = true)
     private String email;
     private String password;
@@ -27,6 +27,7 @@ public class User {
     private Date updated_at;
     private String[] followers;
     private String[] following;
+    private String[] favoriteArticles;
     @Getter @Setter
     private Subscription subscription;
 }

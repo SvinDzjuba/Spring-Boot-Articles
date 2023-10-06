@@ -8,7 +8,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @ToString
-public class Following {
-    private int amount;
-    private String[] name;
+public class ArticleRequest {
+    private String title;
+    private String demo;
+    private String content;
+    private String[] tagList;
 }

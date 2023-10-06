@@ -1,12 +1,16 @@
 package com.example.springbootarticles.controllers;
 
 import com.example.springbootarticles.models.JwtResponse;
-import com.example.springbootarticles.models.RegistrationRequest;
+import com.example.springbootarticles.models.UserRequest;
 import com.example.springbootarticles.models.Subscription;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.UserRepository;
+import com.example.springbootarticles.services.CustomService;
 import com.example.springbootarticles.services.JwtHelper;
 import com.example.springbootarticles.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api")
 public class AuthController {
 
     @Autowired
@@ -33,6 +37,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CustomService customService;
 
     @Autowired
     private UserRepository userRepo;
@@ -48,7 +55,9 @@ public class AuthController {
 
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    @GetMapping("/login")
+    @PostMapping("/users/login")
+    @Operation(summary = "Authentication")
+    @SecurityRequirements
     public ResponseEntity<JwtResponse> login(@RequestParam String username, @RequestParam String password) {
 
         this.doAuthenticate(username, password);
@@ -63,8 +72,10 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegistrationRequest registrationUser) {
+    @PostMapping("/users")
+    @Operation(summary = "Registration")
+    @SecurityRequirements
+    public ResponseEntity<User> register(@RequestBody UserRequest registrationUser) {
         try {
             if (userService.checkUserDuplicate(registrationUser.getUsername(), registrationUser.getEmail())) {
                 logger.warn("User with username {} or email {} already exists",
@@ -73,23 +84,23 @@ public class AuthController {
             }
             Subscription subscription = new Subscription(
                     5,
-                    userService.addMonthToCurrentDate(),
-                    userService.addMonthToCurrentDate(),
+                    customService.addMonthToCurrentDate(),
+                    customService.addMonthToCurrentDate(),
                     "Free"
             );
             User user = new User(
                     null,
                     registrationUser.getName(),
                     registrationUser.getUsername(),
-                    "user",
+                    registrationUser.getBio(),
                     registrationUser.getEmail(),
                     passwordEncoder().encode(registrationUser.getPassword()),
                     new Date(),
                     new Date(),
                     new String[]{},
                     new String[]{},
+                    new String[]{},
                     subscription
-
             );
             userRepo.save(user);
             return new ResponseEntity<>(user, HttpStatus.CREATED);

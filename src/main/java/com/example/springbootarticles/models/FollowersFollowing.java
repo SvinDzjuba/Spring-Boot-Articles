@@ -7,9 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Profile {
-    private String name;
-    private String username;
-    private String bio;
-    private boolean following;
+@ToString
+public class FollowersFollowing {
+    private int amount;
+    private String[] name;
 }

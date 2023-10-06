@@ -5,21 +5,25 @@ import com.example.springbootarticles.models.Comment;
 import com.example.springbootarticles.models.CommentResponse;
 import com.example.springbootarticles.models.User;
 import com.example.springbootarticles.repositories.CommentRepository;
-import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.CommentService;
+import com.example.springbootarticles.services.CustomService;
+import com.example.springbootarticles.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping(path = "api")
+@Tag(name = "Comments", description = "Comments API")
 public class CommentController {
 
     @Autowired
@@ -29,49 +33,43 @@ public class CommentController {
     private CommentService commentService;
 
     @Autowired
-    private UserRepository userRepo;
+    private CustomService customService;
 
-    @GetMapping("/comments")
-    public List<CommentResponse> getComments() {
-        List<Comment> comments = commentRepo.findAll();
-        List<CommentResponse> commentsList = new ArrayList<>();
-        for (Comment comment : comments) {
-            commentsList.add(commentService.getCommentWithDetails(comment.getId()));
-        }
-        return commentsList;
+    @GetMapping("/articles/{id}/comments")
+    @Operation(summary = "Get Comments from an Article")
+    public List<CommentResponse> getComments(@PathVariable String id) {
+        return commentService.getArticleComments(id);
     }
 
-    @PostMapping("/comments")
-    public String saveComment(@RequestBody Comment comment) {
-        comment.setId(null);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepo.findByUsername(authentication.getName());
-        comment.setUser_id(user.getId());
-        commentRepo.save(comment);
-        return "Comment was added successfully!";
-    }
-
-    @PutMapping("/comments/{id}")
-    public ResponseEntity<?> updateComment(@PathVariable("id") String id, @RequestBody Comment comment) {
+    @PostMapping("/articles/{id}/comments")
+    @Operation(summary = "Add Comments to an Article")
+    public ResponseEntity<?> saveComment(@RequestBody String content, @PathVariable String id) {
         try {
-            commentService.updateCommentHandler(id, comment);
-            return new ResponseEntity<>("Comment was updated successfully!", HttpStatus.OK);
+            commentService.saveCommentHandler(content, id);
+            return new ResponseEntity<>("Comment was added successfully!", HttpStatus.CREATED);
         } catch (ConstraintViolationException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
         } catch (NotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Article now found!", HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("/comments/{id}")
-    public String deleteComment(@PathVariable String id){
-        commentRepo.deleteById(id);
-        return "Comment with id: {" + id + "} was deleted successfully!";
-    }
+//    @PutMapping("/articles/{id}/comments/{id}")
+//    @Operation(summary = "Update comment by id")
+//    public ResponseEntity<?> updateComment(@PathVariable("id") String id, @RequestBody String content) {
+//        try {
+//            commentService.updateCommentHandler(id, content);
+//            return new ResponseEntity<>("Comment was updated successfully!", HttpStatus.OK);
+//        } catch (ConstraintViolationException e) {
+//            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+//        } catch (NotFoundException e) {
+//            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+//        }
+//    }
 
-    @GetMapping("/comments/{id}")
-    public ResponseEntity<CommentResponse> showComment(@PathVariable String id) {
-        CommentResponse commentResponse = commentService.getCommentWithDetails(id);
-        return ResponseEntity.ok(commentResponse);
-    }
+//    @DeleteMapping("/articles/{id}/comments/{id}")
+//    @Operation(summary = "Delete Comment")
+//    public ResponseEntity<?> deleteComment(@PathVariable String id){
+//
+//    }
 }
