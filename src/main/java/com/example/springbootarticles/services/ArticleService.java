@@ -112,12 +112,25 @@ public class ArticleService {
             Article articleToUpdate = articleData.get();
             User currentUser = customService.getAuthenticatedUser();
             if (Objects.equals(articleData.get().getAuthor(), currentUser.getId())) {
-                articleToUpdate.setTitle(article.getTitle() == null ? articleToUpdate.getTitle() : article.getTitle());
-                articleToUpdate.setSlug(customService.slugify(article.getTitle() == null ? articleToUpdate.getTitle() : article.getTitle()));
-                articleToUpdate.setDemo(article.getDemo() == null ? articleToUpdate.getDemo() : article.getDemo());
-                articleToUpdate.setContent(article.getContent() == null ? articleToUpdate.getContent() : article.getContent());
+                articleToUpdate.setTitle(
+                        article.getTitle() == null || article.getTitle().isEmpty() ? articleToUpdate.getTitle() : article.getTitle());
+                articleToUpdate.setSlug(customService.slugify(
+                        article.getTitle() == null || article.getTitle().isEmpty() ? articleToUpdate.getTitle() : article.getTitle()));
+                articleToUpdate.setDemo(
+                        article.getDemo() == null || article.getDemo().isEmpty() ? articleToUpdate.getDemo() : article.getDemo());
+                articleToUpdate.setContent(
+                        article.getContent() == null || article.getContent().isEmpty() ? articleToUpdate.getContent() : article.getContent());
                 articleToUpdate.setUpdated_at(new Date());
-                articleToUpdate.setTagList(article.getTagList().length == 0 ? articleToUpdate.getTagList() : article.getTagList());
+                if (article.getTagList() != null) {
+                    String[] newTagList = Arrays.stream(article.getTagList())
+                            .filter(tag -> !tag.isEmpty())
+                            .toArray(String[]::new);
+
+                    if (newTagList.length > 0) {
+                        articleToUpdate.setTagList(newTagList);
+                    }
+                    // If newTagList is empty, the previous tagList in articleToUpdate remains unchanged.
+                }
                 articleRepo.save(articleToUpdate);
             }
         } else {

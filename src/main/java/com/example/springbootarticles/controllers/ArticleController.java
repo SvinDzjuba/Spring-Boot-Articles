@@ -34,9 +34,6 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-    @Autowired
-    private CustomService customService;
-
     @GetMapping("/articles")
     @Operation(summary = "List Articles")
     @SecurityRequirements
