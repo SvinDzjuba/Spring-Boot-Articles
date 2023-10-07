@@ -6,6 +6,7 @@ import com.example.springbootarticles.models.UserRequest;
 import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,7 +49,7 @@ public class UserController {
     }
 
     @DeleteMapping("/user")
-    @Operation(summary = "Delete current user")
+    @Operation(summary = "Delete Current User")
     public ResponseEntity<?> deleteUser() {
         try {
             userService.deleteUserHandler();
@@ -66,8 +67,8 @@ public class UserController {
     }
 
     @PutMapping("/user/subscription")
-    @Operation(summary = "Upgrade user subscription")
-    public String upgradeSubscription(@RequestParam String subscription) {
+    @Operation(summary = "Upgrade User Subscription")
+    public String upgradeSubscription(@RequestParam @Parameter(name = "subscription", description = "Silver Month") String subscription) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepo.findByUsername(authentication.getName());
         userService.upgradeUserSubscription(subscription, user);
@@ -75,7 +76,7 @@ public class UserController {
     }
 
     @GetMapping("/user/followers")
-    @Operation(summary = "Get list of followers")
+    @Operation(summary = "Get Followers")
     public ResponseEntity<?> getFollowers() {
         try {
             return new ResponseEntity<>(userService.showFollowersOrFollowing("followers"), HttpStatus.OK);
@@ -85,7 +86,7 @@ public class UserController {
     }
 
     @GetMapping("/user/following")
-    @Operation(summary = "Get list of following")
+    @Operation(summary = "Get Following")
     public ResponseEntity<?> getFollowing() {
         try {
             return new ResponseEntity<>(userService.showFollowersOrFollowing("following"), HttpStatus.OK);

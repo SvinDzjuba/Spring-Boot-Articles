@@ -102,16 +102,15 @@ public class ArticleService {
         newArticle.setUpdated_at(new Date());
         newArticle.setAuthor(currentUser.getId());
         newArticle.setFavoriteCount(0);
-        newArticle.setTagList(article.getTagList());
+        newArticle.setTagList(checkTagListAndCapitalize(article.getTagList()));
         articleRepo.save(newArticle);
     }
 
-    public void updateArticleHandler(String id, ArticleRequest article) throws NotFoundException {
-        Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()) {
-            Article articleToUpdate = articleData.get();
+    public void updateArticleHandler(String slug, ArticleRequest article) throws NotFoundException {
+        Article articleToUpdate = articleRepo.findBySlug(slug);
+        if (articleToUpdate != null) {
             User currentUser = customService.getAuthenticatedUser();
-            if (Objects.equals(articleData.get().getAuthor(), currentUser.getId())) {
+            if (Objects.equals(articleToUpdate.getAuthor(), currentUser.getId())) {
                 articleToUpdate.setTitle(
                         article.getTitle() == null || article.getTitle().isEmpty() ? articleToUpdate.getTitle() : article.getTitle());
                 articleToUpdate.setSlug(customService.slugify(
@@ -121,16 +120,7 @@ public class ArticleService {
                 articleToUpdate.setContent(
                         article.getContent() == null || article.getContent().isEmpty() ? articleToUpdate.getContent() : article.getContent());
                 articleToUpdate.setUpdated_at(new Date());
-                if (article.getTagList() != null) {
-                    String[] newTagList = Arrays.stream(article.getTagList())
-                            .filter(tag -> !tag.isEmpty())
-                            .toArray(String[]::new);
-
-                    if (newTagList.length > 0) {
-                        articleToUpdate.setTagList(newTagList);
-                    }
-                    // If newTagList is empty, the previous tagList in articleToUpdate remains unchanged.
-                }
+                articleToUpdate.setTagList(checkTagListAndCapitalize(article.getTagList()));
                 articleRepo.save(articleToUpdate);
             }
         } else {
@@ -138,13 +128,12 @@ public class ArticleService {
         }
     }
 
-    public void deleteArticleHandler(String id) {
+    public void deleteArticleHandler(String slug) {
         User currentUser = customService.getAuthenticatedUser();
-        Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()) {
-            Article articleToDelete = articleData.get();
+        Article articleToDelete = articleRepo.findBySlug(slug);
+        if (articleToDelete != null) {
             if (Objects.equals(articleToDelete.getAuthor(), currentUser.getId())) {
-                articleRepo.deleteById(id);
+                articleRepo.deleteById(articleToDelete.getId());
             } else {
                 throw new SecurityException("You are not the author of this article!");
             }
@@ -153,22 +142,23 @@ public class ArticleService {
         }
     }
 
-    public void likeArticle(String id, boolean like) {
-        Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()) {
-            Article articleToUpdate = articleData.get();
+    public void likeArticle(String slug, boolean like) {
+        Article articleToUpdate = articleRepo.findBySlug(slug);
+        if (articleToUpdate != null) {
             User currentUser = customService.getAuthenticatedUser();
-            List<User> checkArticleDuplicate = userRepo.findByFavoriteArticlesContaining(id);
+            List<User> checkArticleDuplicate = userRepo.findByFavoriteArticlesContaining(articleToUpdate.getId());
             String[] userFavoriteArticles = new String[0];
             if (like) {
                 if (checkArticleDuplicate.isEmpty()) {
                     articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() + 1);
-                    userFavoriteArticles = customService.addOrRemoveStringFromArray(currentUser.getFavoriteArticles(), id, "add");
+                    userFavoriteArticles = customService.addOrRemoveStringFromArray(
+                            currentUser.getFavoriteArticles(), articleToUpdate.getId(), "add");
                 }
             } else {
                 if (!checkArticleDuplicate.isEmpty()) {
                     articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() - 1);
-                    userFavoriteArticles = customService.addOrRemoveStringFromArray(currentUser.getFavoriteArticles(), id, "remove");
+                    userFavoriteArticles = customService.addOrRemoveStringFromArray(
+                            currentUser.getFavoriteArticles(), articleToUpdate.getId(), "remove");
                 }
             }
             currentUser.setFavoriteArticles(userFavoriteArticles);
@@ -213,5 +203,26 @@ public class ArticleService {
         List<Article> articles = articleRepo.findAll();
         articles.removeIf(article -> !favoritedArticlesList.contains(article.getId()));
         return articles;
+    }
+
+    public static String capitalizeFirstLetter(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        return input.substring(0, 1).toUpperCase() + input.substring(1).toLowerCase();
+    }
+
+    public String[] checkTagListAndCapitalize(String[] tagList) {
+        if (tagList != null) {
+            String[] newTagList = Arrays.stream(tagList)
+                    .filter(tag -> !tag.isEmpty())
+                    .map(ArticleService::capitalizeFirstLetter) // Capitalize the first letter
+                    .toArray(String[]::new);
+
+            if (newTagList.length > 0) {
+                return newTagList;
+            }
+        }
+        return null;
     }
 }

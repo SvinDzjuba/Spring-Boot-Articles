@@ -4,6 +4,7 @@ import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.Profile;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public class ProfileController {
     @GetMapping("/{username}")
     @Operation(summary = "Get Profile")
 //    @SecurityRequirements
-    public ResponseEntity<?> showUserProfile(@PathVariable String username) {
+    public ResponseEntity<?> showUserProfile(@PathVariable @Schema(name = "username", example = "maryna54") String username) {
         try {
             Profile profile = userService.showUserProfile(username);
             return new ResponseEntity<>(profile, HttpStatus.OK);
@@ -32,7 +33,7 @@ public class ProfileController {
 
     @PostMapping("/{username}/follow")
     @Operation(summary = "Follow user")
-    public ResponseEntity<?> followUser(@PathVariable("username") String username) {
+    public ResponseEntity<?> followUser(@PathVariable("username") @Schema(name = "username", example = "maryna54") String username) {
         try {
             userService.followOrUnfollowUser(username, "follow");
             return new ResponseEntity<>("User was followed successfully!", HttpStatus.OK);
@@ -43,7 +44,7 @@ public class ProfileController {
 
     @DeleteMapping("/{username}/unfollow")
     @Operation(summary = "Unfollow user")
-    public ResponseEntity<?> unfollowUser(@PathVariable("username") String username) {
+    public ResponseEntity<?> unfollowUser(@PathVariable("username") @Schema(name = "username", example = "maryna54") String username) {
         try {
             userService.followOrUnfollowUser(username, "unfollow");
             return new ResponseEntity<>("User was unfollowed successfully!", HttpStatus.OK);

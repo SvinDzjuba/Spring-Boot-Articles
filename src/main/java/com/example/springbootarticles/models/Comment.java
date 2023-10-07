@@ -17,11 +17,11 @@ import java.util.Date;
 public class Comment {
     @Id
     private String id;
-    @NotBlank
+    @NotBlank(message = "User id is mandatory")
     private String user_id;
-    @NotBlank
+    @NotBlank(message = "Article id is mandatory")
     private String article_id;
-    @NotBlank
+    @NotBlank(message = "Content is mandatory")
     private String content;
     private Date created_at;
     private Date updated_at;

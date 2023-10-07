@@ -18,13 +18,13 @@ import java.util.Date;
 public class Article {
     @Id
     private String id;
-    @NotBlank
+    @NotBlank(message = "Title is mandatory")
     private String title;
-    @NotBlank
+    @NotBlank(message = "Slug is mandatory")
     private String slug;
-    @NotBlank
+    @NotBlank(message = "Demo is mandatory")
     private String demo;
-    @NotBlank
+    @NotBlank(message = "Content is mandatory")
     private String content;
     private Date created_at;
     private Date updated_at;

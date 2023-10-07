@@ -1,15 +1,11 @@
 package com.example.springbootarticles.controllers;
 
 import com.example.springbootarticles.exceptions.NotFoundException;
-import com.example.springbootarticles.models.Comment;
 import com.example.springbootarticles.models.CommentResponse;
-import com.example.springbootarticles.models.User;
-import com.example.springbootarticles.repositories.CommentRepository;
 import com.example.springbootarticles.services.CommentService;
-import com.example.springbootarticles.services.CustomService;
-import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -27,25 +21,24 @@ import java.util.List;
 public class CommentController {
 
     @Autowired
-    private CommentRepository commentRepo;
-
-    @Autowired
     private CommentService commentService;
 
-    @Autowired
-    private CustomService customService;
-
-    @GetMapping("/articles/{id}/comments")
+    @GetMapping("/articles/{slug}/comments")
     @Operation(summary = "Get Comments from an Article")
-    public List<CommentResponse> getComments(@PathVariable String id) {
-        return commentService.getArticleComments(id);
+    public List<CommentResponse> getComments(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
+    {
+        return commentService.getArticleComments(slug);
     }
 
-    @PostMapping("/articles/{id}/comments")
+    @PostMapping("/articles/{slug}/comments")
     @Operation(summary = "Add Comments to an Article")
-    public ResponseEntity<?> saveComment(@RequestBody String content, @PathVariable String id) {
+    public ResponseEntity<?> saveComment(
+            @RequestBody @Schema(name = "content", example = "I definitely agree with this article!") String content,
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
+    {
         try {
-            commentService.saveCommentHandler(content, id);
+            commentService.saveCommentHandler(content, slug);
             return new ResponseEntity<>("Comment was added successfully!", HttpStatus.CREATED);
         } catch (ConstraintViolationException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
@@ -54,22 +47,34 @@ public class CommentController {
         }
     }
 
-//    @PutMapping("/articles/{id}/comments/{id}")
-//    @Operation(summary = "Update comment by id")
-//    public ResponseEntity<?> updateComment(@PathVariable("id") String id, @RequestBody String content) {
-//        try {
-//            commentService.updateCommentHandler(id, content);
-//            return new ResponseEntity<>("Comment was updated successfully!", HttpStatus.OK);
-//        } catch (ConstraintViolationException e) {
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
-//        } catch (NotFoundException e) {
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-//        }
-//    }
+    @PutMapping("/articles/{slug}/comments/{id}")
+    @Operation(summary = "Update Comment")
+    public ResponseEntity<?> updateComment(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug,
+            @PathVariable @Parameter(name = "id", example = "65217b12e7aa345f6bc16a43") String id,
+            @RequestBody @Schema(name = "content", example = "I definitely agree with this article!") String content)
+    {
+        try {
+            commentService.updateCommentHandler(slug, id, content);
+            return new ResponseEntity<>("Comment was updated successfully!", HttpStatus.OK);
+        } catch (ConstraintViolationException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 
-//    @DeleteMapping("/articles/{id}/comments/{id}")
-//    @Operation(summary = "Delete Comment")
-//    public ResponseEntity<?> deleteComment(@PathVariable String id){
-//
-//    }
+    @DeleteMapping("/articles/{slug}/comments/{id}")
+    @Operation(summary = "Delete Comment")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug,
+            @PathVariable @Parameter(name = "id", example = "65217b12e7aa345f6bc16a43") String id)
+    {
+        try {
+            commentService.deleteCommentHandler(slug, id);
+            return new ResponseEntity<>("Comment was deleted successfully!", HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 }

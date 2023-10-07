@@ -4,7 +4,6 @@ import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.ArticleRepository;
 import com.example.springbootarticles.services.ArticleService;
-import com.example.springbootarticles.services.CustomService;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api")
@@ -63,11 +61,14 @@ public class ArticleController {
         }
     }
 
-    @PutMapping("/articles/{id}")
+    @PutMapping("/articles/{slug}")
     @Operation(summary = "Update Article")
-    public ResponseEntity<?> updateArticle(@PathVariable("id") String id, @RequestBody ArticleRequest article) {
+    public ResponseEntity<?> updateArticle(
+            @PathVariable("slug") @Parameter(name = "slug", example = "what-is-java-spring-boot") String slug,
+            @RequestBody ArticleRequest article)
+    {
         try {
-            articleService.updateArticleHandler(id, article);
+            articleService.updateArticleHandler(slug, article);
             return new ResponseEntity<>("Article was updated successfully!", HttpStatus.OK);
         } catch (ConstraintViolationException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
@@ -76,33 +77,40 @@ public class ArticleController {
         }
     }
 
-    @DeleteMapping("/articles/{id}")
+    @DeleteMapping("/articles/{slug}")
     @Operation(summary = "Delete Article")
-    public ResponseEntity<?> deleteArticle(@PathVariable String id) {
+    public ResponseEntity<?> deleteArticle(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
+    {
         try {
-            articleService.deleteArticleHandler(id);
+            articleService.deleteArticleHandler(slug);
             return new ResponseEntity<>("Article was deleted successfully!", HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @GetMapping("/articles/{id}")
+    @GetMapping("/articles/{slug}")
     @Operation(summary = "Get Article")
-    public ArticleResponse showArticle(@PathVariable String id) throws RuntimeException {
-        Optional<Article> article = articleRepo.findById(id);
-        if (article.isPresent()) {
-            return userService.checkUserSubscriptionAvailability(id);
+    public ArticleResponse showArticle(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
+            throws RuntimeException
+    {
+        Article article = articleRepo.findBySlug(slug);
+        if (article != null) {
+            return userService.checkUserSubscriptionAvailability(article.getId());
         } else {
             throw new NotFoundException("Article not found!");
         }
     }
 
-    @PostMapping("/articles/{id}/favorite")
+    @PostMapping("/articles/{slug}/favorite")
     @Operation(summary = "Favorite Article")
-    public ResponseEntity<?> addArticleToFavorite(@PathVariable String id) {
+    public ResponseEntity<?> addArticleToFavorite(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
+    {
         try {
-            articleService.likeArticle(id, true);
+            articleService.likeArticle(slug, true);
             String message = "Article was add to favorites successfully!";
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (NotFoundException e) {
@@ -110,11 +118,13 @@ public class ArticleController {
         }
     }
 
-    @DeleteMapping("/articles/{id}/favorite")
+    @DeleteMapping("/articles/{slug}/favorite")
     @Operation(summary = "Unfavorite Article")
-    public ResponseEntity<?> removeArticleFromFavorites(@PathVariable String id) {
+    public ResponseEntity<?> removeArticleFromFavorites(
+            @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
+    {
         try {
-            articleService.likeArticle(id, false);
+            articleService.likeArticle(slug, false);
             String message = "Article was removed from favorites successfully!";
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (NotFoundException e) {

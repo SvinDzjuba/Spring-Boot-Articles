@@ -5,6 +5,7 @@ import com.example.springbootarticles.services.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -42,6 +43,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestMatcher apiMatcher = new AntPathRequestMatcher("/api/**");
         http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .antMatchers(HttpMethod.GET, AUTH_WHITE_LIST).permitAll()
+                        .antMatchers(HttpMethod.POST, AUTH_WHITE_LIST).authenticated()
+                        .requestMatchers(apiMatcher).authenticated()
+                )
                 .formLogin(form -> form.loginPage("/api/users").permitAll())
                 .logout(logout -> logout.logoutUrl("/api/logout")
                         .clearAuthentication(true)
@@ -49,10 +55,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/api/users/login")
                         .permitAll())
                 .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .antMatchers(AUTH_WHITE_LIST).permitAll()
-                        .requestMatchers(apiMatcher).authenticated()
-                )
                 .exceptionHandling(e -> e.authenticationEntryPoint(this.point))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);

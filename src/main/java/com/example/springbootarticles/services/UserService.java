@@ -46,15 +46,14 @@ public class UserService {
     public void deleteUserHandler() {
         User userToDelete = customService.getAuthenticatedUser();
         if (userToDelete != null) {
-            // Delete all user articles
+            // Delete all user articles and comments
             List<Article> articles = articleService.getArticlesByAuthorId(userToDelete.getId());
+            List<Comment> comments = commentService.getCommentsByAuthorId(userToDelete.getId());
             for (Article article : articles) {
                 articleService.deleteArticleHandler(article.getId());
-            }
-            // Delete all user comments
-            List<Comment> comments = commentService.getCommentsByAuthorId(userToDelete.getId());
-            for (Comment comment : comments) {
-                commentService.deleteCommentHandler(comment.getId());
+                for (Comment comment : comments) {
+                    commentService.deleteCommentHandler(comment.getId(), article.getSlug());
+                }
             }
             // Delete user
             userRepo.delete(userToDelete);

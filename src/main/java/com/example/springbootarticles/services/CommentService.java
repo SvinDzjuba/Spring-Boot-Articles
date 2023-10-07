@@ -51,14 +51,10 @@ public class CommentService {
 
         return commentResponse;
     }
-    public void updateCommentHandler(String id, String content) throws NotFoundException {
+    public void updateCommentHandler(String slug, String id, String content) throws NotFoundException {
         Optional<Comment> commentData = commentRepo.findById(id);
         if (commentData.isPresent()) {
-            Comment commentToUpdate = commentData.get();
-            User currentUser = customService.getAuthenticatedUser();
-            if (!Objects.equals(commentToUpdate.getUser_id(), currentUser.getId())) {
-                throw new NotFoundException("You are not the author of this comment!");
-            }
+            Comment commentToUpdate = checkCommentExistence(commentData.get(), slug);
             commentToUpdate.setContent(content == null ? commentToUpdate.getContent() : content);
             commentToUpdate.setUpdated_at(new Date());
             commentRepo.save(commentToUpdate);
@@ -66,21 +62,38 @@ public class CommentService {
             throw new NotFoundException("Comment not found!");
         }
     }
-    public void deleteCommentHandler(String id) {
+
+    private Comment checkCommentExistence(Comment comment, String articleSlug) {
+        User currentUser = customService.getAuthenticatedUser();
+        Article article = articleRepo.findBySlug(articleSlug);
+        if (article == null) {
+            throw new NotFoundException("Article not found!");
+        }
+        if (!Objects.equals(comment.getUser_id(), currentUser.getId())) {
+            throw new NotFoundException("You are not the author of this comment!");
+        }
+        if (!Objects.equals(comment.getArticle_id(), article.getId())) {
+            throw new NotFoundException("Comment is not related to this article!");
+        }
+        return comment;
+    }
+
+    public void deleteCommentHandler(String slug, String id) {
         Optional<Comment> commentData = commentRepo.findById(id);
         if (commentData.isPresent()) {
-            commentRepo.deleteById(id);
+            Comment comment = checkCommentExistence(commentData.get(), slug);
+            commentRepo.deleteById(comment.getId());
         } else {
             throw new NotFoundException("Comment not found!");
         }
     }
-    public List<CommentResponse> getArticleComments(String id) {
-        Optional<Article> articleData = articleRepo.findById(id);
-        if (articleData.isPresent()) {
+    public List<CommentResponse> getArticleComments(String slug) {
+        Article articleData = articleRepo.findBySlug(slug);
+        if (articleData != null) {
             List<Comment> allComments = commentRepo.findAll();
             List<CommentResponse> comments = new ArrayList<>();
             for (Comment comment : allComments) {
-                if (Objects.equals(comment.getArticle_id(), id)) {
+                if (Objects.equals(comment.getArticle_id(), articleData.getId())) {
                     comments.add(this.getCommentWithDetails(comment.getId()));
                 }
             }
@@ -89,16 +102,20 @@ public class CommentService {
             throw new NotFoundException("Article not found!");
         }
     }
-    public void saveCommentHandler(String content, String id) {
-        articleRepo.findById(id).orElseThrow(() -> new NotFoundException("Article not found!"));
-        User currentUser = customService.getAuthenticatedUser();
-        Comment comment = new Comment();
-        comment.setUser_id(currentUser.getId());
-        comment.setArticle_id(id);
-        comment.setContent(content);
-        comment.setCreated_at(new Date());
-        comment.setUpdated_at(new Date());
-        commentRepo.save(comment);
+    public void saveCommentHandler(String content, String slug) {
+        Article article = articleRepo.findBySlug(slug);
+        if (article != null) {
+            User currentUser = customService.getAuthenticatedUser();
+            Comment comment = new Comment();
+            comment.setUser_id(currentUser.getId());
+            comment.setArticle_id(article.getId());
+            comment.setContent(content);
+            comment.setCreated_at(new Date());
+            comment.setUpdated_at(new Date());
+            commentRepo.save(comment);
+        } else {
+            throw new NotFoundException("Article not found!");
+        }
     }
 
     public List<Comment> getCommentsByAuthorId(String id) {

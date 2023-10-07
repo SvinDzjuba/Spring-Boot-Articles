@@ -6,7 +6,6 @@ import com.example.springbootarticles.services.CustomService;
 import com.example.springbootarticles.services.JwtHelper;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
