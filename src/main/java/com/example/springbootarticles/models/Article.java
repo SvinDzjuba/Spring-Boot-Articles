@@ -28,8 +28,7 @@ public class Article {
     private String content;
     private Date created_at;
     private Date updated_at;
-    @Field("user_id")
-    private String author_id;
+    private String author;
     private int favoriteCount;
     private String[] tagList;
 }

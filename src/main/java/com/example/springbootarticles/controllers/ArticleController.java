@@ -15,15 +15,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.security.PermitAll;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/articles")
+@RequestMapping("api")
 @Tag(name = "Articles", description = "Articles API")
 public class ArticleController {
 
@@ -39,17 +37,17 @@ public class ArticleController {
     @Autowired
     private CustomService customService;
 
-    /* CRUD for articles */
-    @GetMapping("/")
+    @GetMapping("/articles")
     @Operation(summary = "List Articles")
     @SecurityRequirements
-    public List<ArticleResponse> getArticles(@RequestParam(required = false) String tag) {
-        List<Article> articles;
-        if (tag == null) {
-            articles = articleRepo.findAll();
-        } else {
-            articles = articleRepo.findByTagListContaining(tag);
-        }
+    public List<ArticleResponse> getArticles(
+            @RequestParam(required = false) @Parameter(name = "tag", description = "Article by tag", example = "Java") String tag,
+            @RequestParam(required = false) @Parameter(name = "author", description = "Author of article", example = "durgesh") String author,
+            @RequestParam(required = false) @Parameter(name = "favorited", description = "User favorites", example = "durgesh") String favorited,
+            @RequestParam(required = false) @Parameter(name = "limit", description = "Limit number of articles", example = "20") Integer limit,
+            @RequestParam(required = false) @Parameter(name = "offset", description = "Skip number of articles", example = "0") Integer offset)
+    {
+        List<Article> articles = articleService.getArticlesHandler(tag, author, favorited, limit, offset);
         List<ArticleResponse> articlesList = new ArrayList<>();
         for (Article article : articles) {
             articlesList.add(articleService.getArticleWithDetails(article.getId(), "DEMO"));
@@ -57,7 +55,7 @@ public class ArticleController {
         return articlesList;
     }
 
-    @PostMapping("/")
+    @PostMapping("/articles")
     @Operation(summary = "Create Article")
     public ResponseEntity<?> saveArticle(@RequestBody ArticleRequest article) {
         try {
@@ -68,7 +66,7 @@ public class ArticleController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/articles/{id}")
     @Operation(summary = "Update Article")
     public ResponseEntity<?> updateArticle(@PathVariable("id") String id, @RequestBody ArticleRequest article) {
         try {
@@ -81,7 +79,7 @@ public class ArticleController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/articles/{id}")
     @Operation(summary = "Delete Article")
     public ResponseEntity<?> deleteArticle(@PathVariable String id) {
         try {
@@ -92,7 +90,7 @@ public class ArticleController {
         }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/articles/{id}")
     @Operation(summary = "Get Article")
     public ArticleResponse showArticle(@PathVariable String id) throws RuntimeException {
         Optional<Article> article = articleRepo.findById(id);

@@ -8,4 +8,5 @@ import java.util.List;
 public interface ArticleRepository extends MongoRepository<Article, String> {
     // Queries for articles
     List<Article> findByTagListContaining(String tag);
+    List<Article> findByAuthor(String author);
 }
