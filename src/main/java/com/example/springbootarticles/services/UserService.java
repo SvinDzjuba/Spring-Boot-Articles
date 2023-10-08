@@ -4,6 +4,8 @@ import com.example.springbootarticles.exceptions.NotFoundException;
 import com.example.springbootarticles.models.*;
 import com.example.springbootarticles.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -151,14 +153,21 @@ public class UserService {
             throw new NotFoundException("User not found!");
         }
         User currentUser = customService.getAuthenticatedUser();;
+        boolean isFollowing = Arrays.asList(currentUser.getFollowing()).contains(userToUnfollow.getId());
 
         String[] following;
         String[] followers;
 
         if (Objects.equals(action, "follow")) {
+            if (isFollowing) {
+                throw new NotFoundException("User already followed!");
+            }
             following = customService.addOrRemoveStringFromArray(currentUser.getFollowing(), userToUnfollow.getId(), "add");
             followers = customService.addOrRemoveStringFromArray(userToUnfollow.getFollowers(), currentUser.getId(), "add");
         } else {
+            if (!isFollowing) {
+                throw new NotFoundException("User not followed!");
+            }
             following = customService.addOrRemoveStringFromArray(currentUser.getFollowing(), userToUnfollow.getId(), "remove");
             followers = customService.addOrRemoveStringFromArray(userToUnfollow.getFollowers(), currentUser.getId(), "remove");
         }
