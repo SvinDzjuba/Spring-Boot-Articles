@@ -50,6 +50,20 @@ public class ArticleController {
         return articlesList;
     }
 
+    @GetMapping("/articles/feed")
+    @Operation(summary = "Feed Articles")
+    public List<ArticleResponse> getFeedArticles(
+            @RequestParam(required = false) @Parameter(name = "limit", description = "Limit number of articles", example = "20") Integer limit,
+            @RequestParam(required = false) @Parameter(name = "offset", description = "Skip number of articles", example = "0") Integer offset)
+    {
+        List<Article> articles = articleService.getFeedArticlesHandler(limit, offset);
+        List<ArticleResponse> articlesList = new ArrayList<>();
+        for (Article article : articles) {
+            articlesList.add(articleService.getArticleWithDetails(article.getId(), "DEMO"));
+        }
+        return articlesList;
+    }
+
     @PostMapping("/articles")
     @Operation(summary = "Create Article")
     public ResponseEntity<?> saveArticle(@RequestBody ArticleRequest article) {

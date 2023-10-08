@@ -88,7 +88,35 @@ public class ArticleService {
         // Apply limit and offset
         filteredArticles = applyOffsetAndLimit(offset, limit, filteredArticles);
 
+        // Sort by descending order of date
+        filteredArticles.sort(Comparator.comparing(Article::getCreated_at).reversed());
+
         return filteredArticles;
+    }
+
+    public List<Article> getFeedArticlesHandler(Integer limit, Integer offset) {
+        User currentUser = customService.getAuthenticatedUser();
+        List<Article> articles = new ArrayList<>();
+        if (currentUser != null) {
+            String[] followedUsers = currentUser.getFollowing();
+            for (String followedUser : followedUsers) {
+                User user = userRepo.findById(followedUser).orElse(null);
+                if (user != null) {
+                    articles.addAll(getArticlesByAuthorId(user.getId()));
+                }
+            }
+        }
+        // Remove duplicates (based on article IDs)
+        Set<String> articleIds = new HashSet<>();
+        articles.removeIf(article -> !articleIds.add(article.getId()));
+
+        // Apply limit and offset
+        articles = applyOffsetAndLimit(offset, limit, articles);
+
+        // Sort by descending order of date
+        articles.sort(Comparator.comparing(Article::getCreated_at).reversed());
+
+        return articles;
     }
 
     public void createArticleHandler(ArticleRequest article) {
