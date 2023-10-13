@@ -7,6 +7,8 @@ import com.example.springbootarticles.repositories.UserRepository;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,12 +33,21 @@ public class UserController {
 
     @GetMapping("/users")
     @Operation(summary = "Get all users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation")
+    })
     public List<User> getUsers() {
         return userRepo.findAll();
     }
 
     @PutMapping("/user")
     @Operation(summary = "Update User")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     public ResponseEntity<?> updateUser(@RequestBody UserRequest user) {
         try {
             userService.updateUserHandler(user);
@@ -45,22 +56,35 @@ public class UserController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 
     @DeleteMapping("/user")
     @Operation(summary = "Delete Current User")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     public ResponseEntity<?> deleteUser() {
         try {
             userService.deleteUserHandler();
             return new ResponseEntity<>("User was deleted successfully!", HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 
     @GetMapping("/user")
     @Operation(summary = "Get Current User")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userRepo.findByUsername(authentication.getName());
@@ -68,30 +92,53 @@ public class UserController {
 
     @PutMapping("/user/subscription")
     @Operation(summary = "Upgrade User Subscription")
-    public String upgradeSubscription(@RequestParam @Parameter(name = "subscription", description = "Silver Month") String subscription) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepo.findByUsername(authentication.getName());
-        userService.upgradeUserSubscription(subscription, user);
-        return "User plan upgraded to " + subscription;
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<?> upgradeSubscription(@RequestParam @Parameter(name = "subscription", description = "Silver Month") String subscription) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User user = userRepo.findByUsername(authentication.getName());
+            userService.upgradeUserSubscription(subscription, user);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @GetMapping("/user/followers")
     @Operation(summary = "Get Followers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     public ResponseEntity<?> getFollowers() {
         try {
             return new ResponseEntity<>(userService.showFollowersOrFollowing("followers"), HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 
     @GetMapping("/user/following")
     @Operation(summary = "Get Following")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     public ResponseEntity<?> getFollowing() {
         try {
             return new ResponseEntity<>(userService.showFollowersOrFollowing("following"), HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 }

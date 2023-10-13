@@ -5,6 +5,8 @@ import com.example.springbootarticles.models.Profile;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,11 @@ public class ProfileController {
 
     @GetMapping("/{username}")
     @Operation(summary = "Get Profile")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Profile not found")
+    })
 //    @SecurityRequirements
     public ResponseEntity<?> showUserProfile(@PathVariable @Schema(name = "username", example = "maryna54") String username) {
         try {
@@ -33,6 +40,11 @@ public class ProfileController {
 
     @PostMapping("/{username}/follow")
     @Operation(summary = "Follow user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Profile not found")
+    })
     public ResponseEntity<?> followUser(@PathVariable("username") @Schema(name = "username", example = "maryna54") String username) {
         try {
             userService.followOrUnfollowUser(username, "follow");
@@ -44,6 +56,11 @@ public class ProfileController {
 
     @DeleteMapping("/{username}/unfollow")
     @Operation(summary = "Unfollow user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Profile not found")
+    })
     public ResponseEntity<?> unfollowUser(@PathVariable("username") @Schema(name = "username", example = "maryna54") String username) {
         try {
             userService.followOrUnfollowUser(username, "unfollow");

@@ -7,6 +7,8 @@ import com.example.springbootarticles.services.ArticleService;
 import com.example.springbootarticles.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,12 @@ public class ArticleController {
 
     @GetMapping("/articles")
     @Operation(summary = "List Articles")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
     @SecurityRequirements
     public List<ArticleResponse> getArticles(
             @RequestParam(required = false) @Parameter(name = "tag", description = "Article by tag", example = "Java") String tag,
@@ -52,6 +60,11 @@ public class ArticleController {
 
     @GetMapping("/articles/feed")
     @Operation(summary = "Feed Articles")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
     public List<ArticleResponse> getFeedArticles(
             @RequestParam(required = false) @Parameter(name = "limit", description = "Limit number of articles", example = "20") Integer limit,
             @RequestParam(required = false) @Parameter(name = "offset", description = "Skip number of articles", example = "0") Integer offset)
@@ -66,6 +79,10 @@ public class ArticleController {
 
     @PostMapping("/articles")
     @Operation(summary = "Create Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Article was created successfully"),
+            @ApiResponse(responseCode = "422", description = "Invalid input data")
+    })
     public ResponseEntity<?> saveArticle(@RequestBody ArticleRequest article) {
         try {
             articleService.createArticleHandler(article);
@@ -77,6 +94,11 @@ public class ArticleController {
 
     @PutMapping("/articles/{slug}")
     @Operation(summary = "Update Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Article was updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Article not found"),
+            @ApiResponse(responseCode = "422", description = "Invalid input data")
+    })
     public ResponseEntity<?> updateArticle(
             @PathVariable("slug") @Parameter(name = "slug", example = "what-is-java-spring-boot") String slug,
             @RequestBody ArticleRequest article)
@@ -93,6 +115,10 @@ public class ArticleController {
 
     @DeleteMapping("/articles/{slug}")
     @Operation(summary = "Delete Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Article was deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
     public ResponseEntity<?> deleteArticle(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
     {
@@ -106,6 +132,11 @@ public class ArticleController {
 
     @GetMapping("/articles/{slug}")
     @Operation(summary = "Get Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
+    @SecurityRequirements
     public ArticleResponse showArticle(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
             throws RuntimeException
@@ -120,6 +151,10 @@ public class ArticleController {
 
     @PostMapping("/articles/{slug}/favorite")
     @Operation(summary = "Favorite Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Article was added to favorites successfully"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
     public ResponseEntity<?> addArticleToFavorite(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
     {
@@ -134,6 +169,10 @@ public class ArticleController {
 
     @DeleteMapping("/articles/{slug}/favorite")
     @Operation(summary = "Unfavorite Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Article was removed from favorites successfully"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
     public ResponseEntity<?> removeArticleFromFavorites(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
     {

@@ -45,10 +45,10 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .antMatchers(HttpMethod.GET, AUTH_WHITE_LIST).permitAll()
+                        .antMatchers(HttpMethod.POST, "/api/users", "/api/users/login").permitAll()
                         .antMatchers(HttpMethod.POST, AUTH_WHITE_LIST).authenticated()
                         .requestMatchers(apiMatcher).authenticated()
                 )
-                .formLogin(form -> form.loginPage("/api/users").permitAll())
                 .logout(logout -> logout.logoutUrl("/api/logout")
                         .clearAuthentication(true)
                         .invalidateHttpSession(true)

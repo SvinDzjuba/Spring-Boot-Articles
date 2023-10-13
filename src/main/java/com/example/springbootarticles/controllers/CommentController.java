@@ -6,6 +6,9 @@ import com.example.springbootarticles.services.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,13 @@ public class CommentController {
 
     @GetMapping("/articles/{slug}/comments")
     @Operation(summary = "Get Comments from an Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
+    @SecurityRequirements
     public List<CommentResponse> getComments(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
     {
@@ -33,6 +43,13 @@ public class CommentController {
 
     @PostMapping("/articles/{slug}/comments")
     @Operation(summary = "Add Comments to an Article")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity"),
+            @ApiResponse(responseCode = "404", description = "Article not found")
+    })
     public ResponseEntity<?> saveComment(
             @RequestBody @Schema(name = "content", example = "I definitely agree with this article!") String content,
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
@@ -49,6 +66,13 @@ public class CommentController {
 
     @PutMapping("/articles/{slug}/comments/{id}")
     @Operation(summary = "Update Comment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity"),
+            @ApiResponse(responseCode = "404", description = "Article or Comment not found")
+    })
     public ResponseEntity<?> updateComment(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug,
             @PathVariable @Parameter(name = "id", example = "65217b12e7aa345f6bc16a43") String id,
@@ -66,6 +90,12 @@ public class CommentController {
 
     @DeleteMapping("/articles/{slug}/comments/{id}")
     @Operation(summary = "Delete Comment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Article or Comment not found")
+    })
     public ResponseEntity<?> deleteComment(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug,
             @PathVariable @Parameter(name = "id", example = "65217b12e7aa345f6bc16a43") String id)
