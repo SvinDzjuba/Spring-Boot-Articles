@@ -177,13 +177,13 @@ public class ArticleService {
             List<User> checkArticleDuplicate = userRepo.findByFavoriteArticlesContaining(articleToUpdate.getId());
             String[] userFavoriteArticles = new String[0];
             if (like) {
-                if (checkArticleDuplicate.isEmpty()) {
+                if (!checkUserFavArticleDuplicate(checkArticleDuplicate, currentUser)) {
                     articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() + 1);
                     userFavoriteArticles = customService.addOrRemoveStringFromArray(
                             currentUser.getFavoriteArticles(), articleToUpdate.getId(), "add");
                 }
             } else {
-                if (!checkArticleDuplicate.isEmpty()) {
+                if (checkUserFavArticleDuplicate(checkArticleDuplicate, currentUser)) {
                     articleToUpdate.setFavoriteCount(articleToUpdate.getFavoriteCount() - 1);
                     userFavoriteArticles = customService.addOrRemoveStringFromArray(
                             currentUser.getFavoriteArticles(), articleToUpdate.getId(), "remove");
@@ -231,6 +231,15 @@ public class ArticleService {
         List<Article> articles = articleRepo.findAll();
         articles.removeIf(article -> !favoritedArticlesList.contains(article.getId()));
         return articles;
+    }
+
+    public boolean checkUserFavArticleDuplicate(List<User> users, User currentUser) {
+        for (User user : users) {
+            if (Objects.equals(user.getId(), currentUser.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String capitalizeFirstLetter(String input) {

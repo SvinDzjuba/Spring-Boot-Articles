@@ -125,7 +125,7 @@ public class ArticleController {
     {
         try {
             articleService.likeArticle(slug, true);
-            String message = "Article was add to favorites successfully!";
+            String message = "Article was added to favorites successfully!";
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
