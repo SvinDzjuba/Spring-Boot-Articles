@@ -136,7 +136,7 @@ public class ArticleController {
             @ApiResponse(responseCode = "200", description = "Successful operation"),
             @ApiResponse(responseCode = "404", description = "Article not found")
     })
-    @SecurityRequirements
+//    @SecurityRequirements
     public ArticleResponse showArticle(
             @PathVariable @Parameter(name = "slug", example = "why-i-believe-scratch-is-the-future-of-programming") String slug)
             throws RuntimeException
